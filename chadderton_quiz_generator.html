@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bri.A.Napa — Quiz Generator</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#FFD700;
+  --gold2:#FFA500;
+  --dark:#0a0a18;
+  --panel:#13132a;
+  --border:rgba(255,215,0,0.18);
+  --muted:rgba(255,255,255,0.4);
+  --ibr:rgba(255,255,255,0.13);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#0a0a18;}
+body{background:#0a0a18;font-family:"Nunito","Segoe UI",sans-serif;color:#fff;min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOPBAR */
+.topbar{background:var(--panel);border-bottom:2px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;flex-shrink:0;}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-title{font-family:"Bebas Neue",Impact,sans-serif;font-size:20px;letter-spacing:3px;background:linear-gradient(90deg,#b8860b,#FFD700,#fff8a0,#FFD700,#b8860b);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldShimmer 3s linear infinite;}
+@keyframes goldShimmer{0%{background-position:200% center;}100%{background-position:-200% center;}}
+.topbar-sub{font-size:9px;color:var(--muted);font-weight:800;letter-spacing:1px;}
+.topbar-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn-gold{background:var(--gold);color:#000;border:none;padding:10px 20px;border-radius:8px;font-weight:900;font-size:13px;cursor:pointer;font-family:"Nunito",sans-serif;transition:opacity .2s;}
+.btn-gold:hover{opacity:.88;}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{background:rgba(255,255,255,.07);color:var(--muted);border:1px solid var(--ibr);padding:9px 14px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;font-family:"Nunito",sans-serif;transition:color .2s;}
+.btn-ghost:hover{color:#fff;}
+.btn-sm{padding:7px 12px;font-size:11px;}
+
+/* MAIN LAYOUT */
+.main{display:flex;flex:1;min-height:0;}
+@media(max-width:700px){.main{flex-direction:column;}}
+
+/* SIDEBAR */
+.sidebar{width:290px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;padding-bottom:30px;}
+@media(max-width:700px){.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:50vh;}}
+
+.section{border-bottom:1px solid rgba(255,255,255,.05);padding:13px 14px;}
+.section-title{font-family:"Bebas Neue",Impact,sans-serif;font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:9px;}
+.field{margin-bottom:8px;}
+.label{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:3px;}
+.input{width:100%;background:#ffffff;border:1px solid rgba(0,0,0,.2);border-radius:7px;padding:8px 10px;color:#000;font-size:12px;font-weight:700;outline:none;font-family:"Nunito",sans-serif;}
+.input::placeholder{color:rgba(255,255,255,.2);}
+.input:focus{border-color:rgba(255,215,0,.5);}
+select.input{cursor:pointer;}
+
+/* DIFFICULTY SLIDER */
+.slider-wrap{display:flex;align-items:center;gap:8px;}
+.slider{flex:1;accent-color:var(--gold);cursor:pointer;height:4px;}
+.slider-val{font-family:"Bebas Neue",Impact,sans-serif;font-size:14px;color:var(--gold);min-width:50px;text-align:right;}
+
+/* CATEGORIES GRID */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.cat-btn{border:2px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 6px;cursor:pointer;text-align:center;font-size:9px;font-weight:800;color:var(--muted);background:rgba(255,255,255,.03);transition:all .15s;line-height:1.4;}
+.cat-btn:hover{border-color:rgba(255,215,0,.3);color:rgba(255,215,0,.7);}
+.cat-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,.08);}
+.cat-emoji{font-size:14px;display:block;margin-bottom:2px;}
+
+/* CONTENT AREA */
+.content{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;}
+
+/* API KEY NOTICE */
+.api-box{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.3);border-radius:10px;padding:14px 16px;}
+.api-box-title{font-family:"Bebas Neue",Impact,sans-serif;font-size:14px;letter-spacing:2px;color:var(--gold2);margin-bottom:6px;}
+.api-row{display:flex;gap:8px;align-items:center;}
+.api-input{flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(255,165,0,.3);border-radius:7px;padding:9px 12px;color:#fff;font-size:12px;font-weight:700;outline:none;font-family:monospace;}
+.api-input:focus{border-color:rgba(255,215,0,.6);}
+.api-status{font-size:10px;font-weight:800;margin-top:5px;}
+.api-ok{color:#4dff91;}
+.api-err{color:#ff6b6b;}
+
+/* GENERATE BUTTON */
+.gen-wrap{text-align:center;padding:6px 0;}
+.gen-btn{font-family:"Bebas Neue",Impact,sans-serif;font-size:22px;letter-spacing:4px;padding:16px 40px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;cursor:pointer;transition:opacity .2s;box-shadow:0 4px 20px rgba(255,215,0,.4);width:100%;max-width:400px;position:relative;overflow:hidden;}
+.gen-btn:hover{opacity:.9;}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* LOADING */
+.loading{text-align:center;padding:40px 20px;}
+.spin{width:40px;height:40px;border:4px solid rgba(255,215,0,.2);border-top:4px solid var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-txt{font-family:"Bebas Neue",Impact,sans-serif;font-size:18px;letter-spacing:3px;color:var(--gold);}
+.loading-sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:4px;}
+
+/* ERROR BOX */
+.error-box{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.3);border-radius:10px;padding:14px 16px;color:#ff8080;font-size:12px;font-weight:700;}
+
+/* QUIZ OUTPUT */
+.quiz-output{background:#13132a;border:1px solid rgba(255,215,0,0.18);border-radius:12px;overflow:hidden;}
+.quiz-header{background:linear-gradient(135deg,#001a6e,#000d3d);padding:20px 22px;border-bottom:2px solid var(--border);}
+.quiz-title{font-family:"Bebas Neue",Impact,sans-serif;font-size:26px;letter-spacing:3px;color:var(--gold);}
+.quiz-meta{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:1px;margin-top:4px;}
+.quiz-body{padding:18px 20px;}
+
+.q-block{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.05);}
+.q-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.q-num{display:inline-flex;align-items:center;justify-content:center;background:var(--gold);color:#000;font-family:"Bebas Neue",Impact,sans-serif;font-size:11px;letter-spacing:2px;border-radius:20px;padding:2px 10px;margin-bottom:6px;font-weight:800;}
+.q-text{font-size:13px;font-weight:800;color:#ffffff;line-height:1.5;margin-bottom:8px;}
+.q-options{display:flex;flex-direction:column;gap:5px;}
+.q-opt{display:flex;align-items:flex-start;gap:8px;font-size:12px;font-weight:700;color:#c8c8e8;}
+.q-opt-letter{font-family:"Bebas Neue",Impact,sans-serif;color:var(--gold);font-size:13px;min-width:16px;}
+
+/* QUIZMASTER NOTES */
+.qm-note{font-size:11px;color:rgba(255,165,0,.85);font-weight:700;margin-top:5px;font-style:italic;line-height:1.5;padding-left:4px;border-left:2px solid rgba(255,165,0,.3);}
+.qm-note-label{font-size:9px;font-weight:800;color:rgba(255,165,0,.5);letter-spacing:1px;text-transform:uppercase;margin-top:6px;}
+
+/* TIEBREAKER */
+.tb-block{background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.2);border-radius:10px;padding:16px 18px;margin-bottom:10px;}
+.tb-num{font-family:"Bebas Neue",Impact,sans-serif;font-size:10px;letter-spacing:2px;color:rgba(255,215,0,.5);margin-bottom:4px;}
+.tb-question{font-size:14px;font-weight:800;color:#fff;line-height:1.5;margin-bottom:8px;}
+.tb-answer{font-size:12px;font-weight:800;color:#4dff91;margin-top:6px;}
+
+/* BATCH MODE */
+.batch-round-block{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.batch-round-header{background:linear-gradient(135deg,#001a6e,#000d3d);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.batch-round-title{font-family:"Bebas Neue",Impact,sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold);}
+.batch-round-meta{font-size:9px;color:var(--muted);font-weight:800;}
+.batch-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.batch-cat-btn{border:2px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 5px;cursor:pointer;text-align:center;font-size:9px;font-weight:800;color:var(--muted);background:rgba(255,255,255,.02);transition:all .15s;}
+.batch-cat-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,.07);}
+.batch-progress{background:rgba(255,255,255,.06);border-radius:6px;height:8px;margin:10px 0 4px;overflow:hidden;}
+.batch-progress-bar{background:linear-gradient(90deg,var(--gold),var(--gold2));height:100%;border-radius:6px;width:0%;transition:width .4s;}
+
+/* ANSWERS SECTION */
+.answers-section{background:rgba(0,0,0,.3);border-top:2px dashed rgba(255,215,0,.2);padding:18px 20px;margin-top:0;}
+.answers-title{font-family:"Bebas Neue",Impact,sans-serif;font-size:14px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.answers-title::before{content:"✂";font-size:12px;opacity:.6;}
+.answers-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;}
+@media(min-width:500px){.answers-grid{grid-template-columns:repeat(5,1fr);}}
+.ans-item{font-size:11px;font-weight:800;color:#fff;}
+.ans-num{color:var(--gold);font-family:"Bebas Neue",Impact,sans-serif;font-size:12px;}
+
+/* OUTPUT ACTIONS */
+.output-actions{display:flex;gap:8px;flex-wrap:wrap;padding:0 0 4px 0;}
+
+/* PRINT STYLES */
+@media print{
+  body{background:#fff !important;color:#000 !important;}
+  .sidebar,.topbar,.output-actions,.api-box,.gen-wrap,.no-print,
+  .empty-state,.loading{display:none !important;}
+  .main{display:block !important;}
+  .content{padding:0 !important;}
+
+  /* QUIZ PRINT MODE */
+  body.print-quiz #answer-sheet-output{display:none !important;}
+  body.print-quiz #quiz-output{display:block !important;}
+  body.print-quiz .quiz-body{padding:14px 20px !important;}
+  body.print-quiz .quiz-output{border:none !important;background:#fff !important;border-radius:0 !important;}
+  body.print-quiz .quiz-header{background:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:16px 20px !important;}
+  body.print-quiz .quiz-title{color:#FFD700 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-quiz .quiz-meta{color:rgba(255,255,255,.8) !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-quiz .q-text{color:#000 !important;}
+  body.print-quiz .q-opt{color:#222 !important;}
+  body.print-quiz .q-opt-letter{color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-quiz .q-num{background:#003BC7 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-quiz .answers-section{background:#f5f5f5 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-top:2px dashed #999 !important;}
+  body.print-quiz .answers-title{color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-quiz .ans-num{color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-quiz .ans-item{color:#000 !important;}
+  body.print-quiz .q-block{border-bottom-color:#eee !important;}
+
+  /* ANSWER SHEET PRINT MODE */
+  body.print-answer #quiz-output{display:none !important;}
+  body.print-answer #answer-sheet-output{display:block !important;}
+  body.print-answer .as-wrap{border:none !important;border-radius:0 !important;page-break-inside:avoid;}
+  body.print-answer .as-header{background:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:10px 18px !important;}
+  body.print-answer .as-title{color:#FFD700 !important;font-size:18px !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-meta{color:rgba(255,255,255,.8) !important;font-size:9px !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-team-row{background:#f0f4ff !important;padding:8px 18px !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-bottom:2px solid #e0e8ff !important;}
+  body.print-answer .as-body{padding:6px 18px !important;background:#fff !important;}
+  body.print-answer .as-cols{display:flex !important;gap:16px !important;}
+  body.print-answer .as-col{flex:1 !important;}
+  body.print-answer .as-row{padding:4px 0 !important;border-bottom:1px solid #eef0f8 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-row:last-of-type{border-bottom:none !important;}
+  body.print-answer .as-qnum{font-size:10px !important;color:#003BC7 !important;min-width:22px !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-line{height:14px !important;}
+  body.print-answer .as-box{width:16px !important;height:16px !important;border-width:1.5px !important;}
+  body.print-answer .as-box.tick{border-color:#1a8a1a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-box.cross{border-color:#cc0000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-box-label{font-size:6px !important;}
+  body.print-answer .as-footer{background:#f0f4ff !important;padding:8px 18px !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-top:2px solid #003BC7 !important;}
+  body.print-answer .as-total-label{font-size:12px !important;color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-total-denom{font-size:12px !important;color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-answer .as-total-val{height:20px !important;width:50px !important;}
+
+  /* QM SHEET PRINT MODE */
+  /* Layout toggles — apply in preview and print */
+  body.print-qm #answer-sheet-output{display:none !important;}
+  body.print-qm #quiz-output{display:block !important;}
+  body.print-qm .quiz-body{padding:14px 20px !important;}
+  body.print-qm .quiz-output{border:none !important;background:#fff !important;border-radius:0 !important;}
+  body.print-qm .quiz-header{background:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:16px 20px !important;}
+  body.print-qm .quiz-title{color:#FFD700 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-qm .quiz-meta{color:rgba(255,255,255,.8) !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-qm .q-text{color:#000 !important;}
+  body.print-qm .q-opt{color:#222 !important;}
+  body.print-qm .q-opt-letter{color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-qm .q-num{background:#003BC7 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-qm .q-block{border-bottom-color:#eee !important;}
+  body.print-qm .answers-section{background:#f5f5f5 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-top:2px dashed #999 !important;}
+  body.print-qm .answers-title{color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-qm .ans-num{color:#003BC7 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-qm .ans-item{color:#000 !important;}
+  body.print-qm .qm-note{color:#b45309 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body.print-qm .qm-note-label{color:#92400e !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+  @page{margin:1.5cm;}
+}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;opacity:.5;}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-txt{font-family:"Bebas Neue",Impact,sans-serif;font-size:20px;letter-spacing:3px;color:var(--gold);}
+.empty-sub{font-size:11px;font-weight:700;color:var(--muted);margin-top:6px;line-height:1.6;}
+
+/* HISTORY */
+.hist-list{display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;}
+.hist-item{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border-radius:6px;padding:7px 9px;cursor:pointer;transition:background .15s;}
+.hist-item:hover{background:rgba(255,255,255,.08);}
+.hist-label{font-size:10px;font-weight:800;color:#fff;flex:1;}
+.hist-meta{font-size:9px;color:var(--muted);}
+
+/* PRINT MODE TOGGLE */
+.print-toggle{display:flex;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:4px;}
+.ptog{flex:1;padding:7px 10px;border:none;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;font-family:"Nunito",sans-serif;background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.12);transition:all .15s;}
+.ptog.on{background:var(--gold);color:#000;}
+.as-wrap{background:#fff;color:#000;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.as-header{background:#003BC7;padding:14px 20px;border-bottom:3px solid #FFD700;}
+.as-title{font-family:"Bebas Neue",Impact,sans-serif;font-size:22px;letter-spacing:3px;color:#FFD700;}
+.as-meta{font-size:10px;color:rgba(255,255,255,.8);font-weight:800;letter-spacing:1px;margin-top:2px;}
+.as-team-row{background:#f0f4ff;padding:10px 20px;border-bottom:2px solid #e0e8ff;display:flex;align-items:center;gap:14px;}
+.as-team-label{font-family:"Bebas Neue",Impact,sans-serif;font-size:12px;letter-spacing:2px;color:#003BC7;white-space:nowrap;}
+.as-team-line{flex:1;border-bottom:2px solid #003BC7;height:20px;}
+.as-body{padding:8px 20px;}
+.as-cols{display:flex;gap:20px;}
+.as-col{flex:1;}
+.as-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #eef0f8;}
+.as-row:last-of-type{border-bottom:none;}
+.as-qnum{font-family:"Bebas Neue",Impact,sans-serif;font-size:12px;color:#003BC7;min-width:26px;}
+.as-line{flex:1;border-bottom:1px solid #ccc;height:18px;}
+.as-mark{display:flex;gap:6px;align-items:flex-end;flex-shrink:0;}
+.as-mark-item{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.as-box{width:20px;height:20px;border:2px solid #ccc;border-radius:3px;flex-shrink:0;}
+.as-box.tick{border-color:#1a8a1a;}
+.as-box.cross{border-color:#cc0000;}
+.as-box-label{font-size:7px;font-weight:800;color:#999;letter-spacing:.5px;}
+.as-footer{background:#f0f4ff;border-top:3px solid #003BC7;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;}
+.as-total-label{font-family:"Bebas Neue",Impact,sans-serif;font-size:14px;letter-spacing:3px;color:#003BC7;}
+.as-total-box{display:flex;align-items:center;gap:8px;}
+.as-total-val{border-bottom:3px solid #003BC7;width:60px;height:24px;}
+.as-total-denom{font-family:"Bebas Neue",Impact,sans-serif;font-size:14px;color:#003BC7;}
+.as-est{font-size:9px;color:#999;font-weight:800;letter-spacing:1px;}
+/* answer sheet print rules merged into main print block */
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">⚡ QUIZ GENERATOR</div>
+      <div class="topbar-sub">BRI.A.NAPA &bull; AI-POWERED &bull; PRINT READY</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost btn-sm" onclick="clearQuiz()">🗑 Clear</button>
+    <div class="print-toggle no-print" id="print-toggle" style="display:none;">
+      <button class="ptog on" id="ptog-quiz" onclick="setPrintMode('quiz')">📋 Quiz</button>
+      <button class="ptog" id="ptog-answer" onclick="setPrintMode('answer')">✅ Answer Sheet</button>
+      <button class="ptog" id="ptog-qm" onclick="setPrintMode('qm')" style="display:none;">🎤 QM Notes</button>
+    </div>
+    <button class="btn-ghost btn-sm" onclick="doPrint()" id="print-btn" disabled>🖨 Print</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- API KEY -->
+    <div class="section">
+      <div class="section-title">🔑 API Key</div>
+      <div class="field">
+        <label class="label">Anthropic API Key</label>
+        <div class="api-row">
+          <input class="api-input" type="password" id="api-key-input" placeholder="sk-ant-..." oninput="saveKey()">
+        </div>
+        <div class="api-status" id="api-status"></div>
+      </div>
+    </div>
+
+    <!-- QUIZ SETTINGS -->
+    <div class="section">
+      <div class="section-title">⚙️ Quiz Settings</div>
+
+      <div class="field">
+        <label class="label">Quiz Title</label>
+        <input class="input" type="text" id="quiz-title" placeholder="Bri.A.Napa Quiz Night" value="Bri.A.Napa Quiz Night">
+      </div>
+
+      <div class="field">
+        <label class="label">Sub Title / Date</label>
+        <input class="input" type="text" id="quiz-subtitle" placeholder="Round 1 — General Knowledge">
+      </div>
+
+      <div class="field">
+        <label class="label">Number of Questions</label>
+        <select class="input" id="quiz-count">
+          <option value="5">5 Questions</option>
+          <option value="10" selected>10 Questions</option>
+          <option value="15">15 Questions</option>
+          <option value="20">20 Questions</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label">Difficulty — <span id="diff-label">Medium</span></label>
+        <div class="slider-wrap">
+          <span style="font-size:10px;color:var(--muted);font-weight:800;">Easy</span>
+          <input type="range" class="slider" id="difficulty" min="1" max="5" value="3" oninput="updateDiffLabel()">
+          <span style="font-size:10px;color:var(--muted);font-weight:800;">Hard</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Answer Options per Question</label>
+        <select class="input" id="answer-count">
+          <option value="0">Open Answer (no options)</option>
+          <option value="2">2 Options (True / False)</option>
+          <option value="3" selected>3 Options (A, B, C)</option>
+          <option value="4">4 Options (A, B, C, D)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CATEGORY -->
+    <div class="section">
+      <div class="section-title">📚 Category</div>
+      <div class="cat-grid" id="cat-grid">
+        <div class="cat-btn on" data-cat="General Knowledge" onclick="selectCat(this)"><span class="cat-emoji">🧠</span>General Knowledge</div>
+        <div class="cat-btn" data-cat="Music" onclick="selectCat(this)"><span class="cat-emoji">🎵</span>Music</div>
+        <div class="cat-btn" data-cat="Sport" onclick="selectCat(this)"><span class="cat-emoji">⚽</span>Sport</div>
+        <div class="cat-btn" data-cat="Film & TV" onclick="selectCat(this)"><span class="cat-emoji">🎬</span>Film & TV</div>
+        <div class="cat-btn" data-cat="History" onclick="selectCat(this)"><span class="cat-emoji">📜</span>History</div>
+        <div class="cat-btn" data-cat="Science & Nature" onclick="selectCat(this)"><span class="cat-emoji">🔬</span>Science & Nature</div>
+        <div class="cat-btn" data-cat="Food & Drink" onclick="selectCat(this)"><span class="cat-emoji">🍕</span>Food & Drink</div>
+        <div class="cat-btn" data-cat="Geography" onclick="selectCat(this)"><span class="cat-emoji">🌍</span>Geography</div>
+        <div class="cat-btn" data-cat="Kids (Easy)" onclick="selectCat(this)"><span class="cat-emoji">🧒</span>Kids (Easy)</div>
+        <div class="cat-btn" data-cat="Swimming & Sport" onclick="selectCat(this)"><span class="cat-emoji">🏊</span>Swimming</div>
+        <div class="cat-btn" data-cat="Mixed — all topics" onclick="selectCat(this)"><span class="cat-emoji">🎲</span>Mixed Bag</div>
+        <div class="cat-btn" data-cat="Trick Questions & Brain Teasers" onclick="selectCat(this)"><span class="cat-emoji">🤔</span>Brain Teasers</div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label class="label">Custom Category (overrides above)</label>
+        <input class="input" type="text" id="custom-cat" placeholder="e.g. 1980s Pop Music...">
+      </div>
+    </div>
+
+    <!-- TIEBREAKER -->
+    <div class="section">
+      <div class="section-title">⚡ Tiebreaker</div>
+      <div class="field">
+        <label class="label">Number of Questions</label>
+        <select class="input" id="tb-count">
+          <option value="1" selected>1 Question</option>
+          <option value="3">3 Questions</option>
+          <option value="5">5 Questions</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Category</label>
+        <select class="input" id="tb-category">
+          <option>General Knowledge</option>
+          <option>Sport</option>
+          <option>Music</option>
+          <option>Film &amp; TV</option>
+          <option>Science &amp; Nature</option>
+          <option>History</option>
+          <option>Geography</option>
+          <option>Mixed</option>
+        </select>
+      </div>
+      <button class="btn-gold" style="width:100%;font-family:'Bebas Neue',Impact,sans-serif;font-size:16px;letter-spacing:3px;" id="tb-btn" onclick="generateTiebreaker()" disabled>⚡ GENERATE TIEBREAKER</button>
+      <div id="tb-err" style="font-size:10px;color:#ff6b6b;font-weight:800;margin-top:4px;min-height:12px;"></div>
+    </div>
+
+    <!-- BATCH MODE -->
+    <div class="section">
+      <div class="section-title">📦 Batch Mode — Full Night</div>
+      <div class="field">
+        <label class="label">Select Rounds (tap to pick)</label>
+        <div class="batch-cat-grid" id="batch-cat-grid">
+          <div class="batch-cat-btn on" data-cat="General Knowledge" onclick="toggleBatchCat(this)">🧠 General Knowledge</div>
+          <div class="batch-cat-btn" data-cat="Music" onclick="toggleBatchCat(this)">🎵 Music</div>
+          <div class="batch-cat-btn" data-cat="Sport" onclick="toggleBatchCat(this)">⚽ Sport</div>
+          <div class="batch-cat-btn" data-cat="Film &amp; TV" onclick="toggleBatchCat(this)">🎬 Film &amp; TV</div>
+          <div class="batch-cat-btn" data-cat="History" onclick="toggleBatchCat(this)">📜 History</div>
+          <div class="batch-cat-btn" data-cat="Science &amp; Nature" onclick="toggleBatchCat(this)">🔬 Science</div>
+          <div class="batch-cat-btn" data-cat="Geography" onclick="toggleBatchCat(this)">🌍 Geography</div>
+          <div class="batch-cat-btn" data-cat="Food &amp; Drink" onclick="toggleBatchCat(this)">🍕 Food &amp; Drink</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Questions Per Round</label>
+        <select class="input" id="batch-q-count">
+          <option value="5">5 Questions</option>
+          <option value="10" selected>10 Questions</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Difficulty</label>
+        <select class="input" id="batch-difficulty">
+          <option value="Easy">Easy</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="Hard">Hard</option>
+          <option value="Mixed">Mixed</option>
+        </select>
+      </div>
+      <div id="batch-progress" style="display:none;">
+        <div class="batch-progress"><div class="batch-progress-bar" id="batch-progress-bar"></div></div>
+        <div style="font-size:10px;font-weight:800;color:var(--muted);text-align:center;" id="batch-progress-label">Generating...</div>
+      </div>
+      <button class="btn-gold" style="width:100%;font-family:'Bebas Neue',Impact,sans-serif;font-size:16px;letter-spacing:3px;" id="batch-btn" onclick="generateBatch()" disabled>📦 GENERATE FULL NIGHT</button>
+      <div id="batch-err" style="font-size:10px;color:#ff6b6b;font-weight:800;margin-top:4px;min-height:12px;"></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="section">
+      <div class="section-title">📋 Recent Quizzes</div>
+      <div class="hist-list" id="hist-list">
+        <div style="font-size:10px;color:var(--muted);padding:4px 0;">No quizzes generated yet.</div>
+      </div>
+      <button class="btn-ghost btn-sm" style="width:100%;margin-top:8px;" onclick="clearHistory()">Clear History</button>
+    </div>
+
+  </div>
+  <!-- /SIDEBAR -->
+
+  <!-- CONTENT -->
+  <div class="content" id="content-area">
+
+    <!-- API KEY NOTICE -->
+    <div class="api-box no-print" id="api-notice">
+      <div class="api-box-title">🔑 Getting Started</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:700;line-height:1.6;">
+        Enter your Anthropic API key in the sidebar. It saves to this device only — never sent anywhere except directly to Anthropic to generate your quiz. Get a key at <strong style="color:var(--gold);">console.anthropic.com</strong> — top up like pay-as-you-go, each quiz costs pennies.
+      </div>
+    </div>
+
+    <!-- GENERATE BUTTON -->
+    <div class="gen-wrap no-print">
+      <button class="gen-btn" id="gen-btn" onclick="generateQuiz()" disabled>⚡ GENERATE QUIZ</button>
+      <div id="gen-err" style="font-size:11px;color:#ff6b6b;font-weight:800;text-align:center;margin-top:8px;min-height:16px;"></div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🧩</div>
+      <div class="empty-txt">Ready to Generate</div>
+      <div class="empty-sub">Choose your category and difficulty<br>then hit Generate Quiz to create your round.<br>Print-ready output with quizmaster answer key.</div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loading-state" style="display:none;">
+      <div class="spin"></div>
+      <div class="loading-txt">Generating Your Quiz...</div>
+      <div class="loading-sub">AI is crafting 10 quality questions — this takes about 10 seconds</div>
+    </div>
+
+    <!-- QUIZ OUTPUT -->
+    <div id="quiz-output" style="display:none;"></div>
+
+    <!-- ANSWER SHEET OUTPUT -->
+    <div id="answer-sheet-output" style="display:none;"></div>
+
+    <!-- TIEBREAKER OUTPUT -->
+    <div id="tiebreaker-output" style="display:none;"></div>
+
+    <!-- BATCH OUTPUT -->
+    <div id="batch-output" style="display:none;"></div>
+
+  </div>
+  <!-- /CONTENT -->
+
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+var selectedCat = "General Knowledge";
+var currentQuiz = null;
+var DIFF_LABELS = {1:"Very Easy",2:"Easy",3:"Medium",4:"Hard",5:"Very Hard"};
+
+// ── INIT ───────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", function(){
+  var saved = localStorage.getItem("casc_quiz_api_key") || "";
+  if(saved){ document.getElementById("api-key-input").value = saved; updateKeyStatus(saved); }
+  renderHistory();
+});
+
+// ── API KEY ────────────────────────────────────────────────
+function saveKey(){
+  var val = document.getElementById("api-key-input").value.trim();
+  localStorage.setItem("casc_quiz_api_key", val);
+  updateKeyStatus(val);
+}
+function updateKeyStatus(val){
+  var st = document.getElementById("api-status");
+  var btn = document.getElementById("gen-btn");
+  var notice = document.getElementById("api-notice");
+  if(val && val.startsWith("sk-ant-")){
+    st.className = "api-status api-ok";
+    st.textContent = "Key saved — ready to generate";
+    btn.disabled = false;
+    if(notice) notice.style.display = "none";
+    var tbBtn = document.getElementById("tb-btn");
+    var batchBtn = document.getElementById("batch-btn");
+    if(tbBtn) tbBtn.disabled = false;
+    if(batchBtn) batchBtn.disabled = false;
+  } else if(val && val.length > 5){
+    st.className = "api-status api-err";
+    st.textContent = "Key should start with sk-ant-";
+    btn.disabled = true;
+  } else {
+    st.className = "api-status";
+    st.textContent = "";
+    btn.disabled = true;
+  }
+}
+
+// ── CATEGORY ───────────────────────────────────────────────
+function selectCat(el){
+  document.querySelectorAll(".cat-btn").forEach(function(b){ b.classList.remove("on"); });
+  el.classList.add("on");
+  selectedCat = el.dataset.cat;
+  document.getElementById("custom-cat").value = "";
+}
+
+// ── DIFFICULTY LABEL ───────────────────────────────────────
+function updateDiffLabel(){
+  var v = document.getElementById("difficulty").value;
+  document.getElementById("diff-label").textContent = DIFF_LABELS[v] || "Medium";
+}
+
+// ── GET USED QUESTIONS FROM HISTORY ────────────────────────
+function getUsedQuestions(category){
+  try{
+    var hist = JSON.parse(localStorage.getItem("casc_quiz_hist") || "[]");
+    var used = [];
+    hist.forEach(function(h){
+      if(h.quiz && h.quiz.category === category && h.quiz.questions){
+        h.quiz.questions.forEach(function(q){
+          if(q.question) used.push(q.question);
+        });
+      }
+    });
+    return used;
+  } catch(e){ return []; }
+}
+
+// ── GENERATE ───────────────────────────────────────────────
+function generateQuiz(){
+  var apiKey = (localStorage.getItem("casc_quiz_api_key") || "").trim();
+  if(!apiKey || !apiKey.startsWith("sk-ant-")){
+    showErr("Please enter a valid Anthropic API key in the sidebar first.");
+    return;
+  }
+
+  var customCat = document.getElementById("custom-cat").value.trim();
+  var category = customCat || selectedCat;
+  var count = parseInt(document.getElementById("quiz-count").value) || 10;
+  var diffVal = parseInt(document.getElementById("difficulty").value) || 3;
+  var diffLabel = DIFF_LABELS[diffVal] || "Medium";
+  var ansCount = parseInt(document.getElementById("answer-count").value) || 3;
+  var quizTitle = document.getElementById("quiz-title").value.trim() || "Bri.A.Napa Quiz";
+  var quizSub = document.getElementById("quiz-subtitle").value.trim() || "";
+
+  document.getElementById("empty-state").style.display = "none";
+  document.getElementById("loading-state").style.display = "block";
+  document.getElementById("quiz-output").style.display = "none";
+  document.getElementById("gen-btn").disabled = true;
+  showErr("");
+
+  // Build letters list based on mode
+  var isOpen = ansCount === 0;
+  var isTF = ansCount === 2;
+  var letters, letterList, questionType;
+  if(isOpen){
+    letters = [];
+    letterList = "";
+    questionType = "open-answer";
+  } else if(isTF){
+    letters = ["A","B"];
+    letterList = "A, B";
+    questionType = "two-option";
+  } else if(ansCount === 4){
+    letters = ["A","B","C","D"];
+    letterList = "A, B, C, D";
+    questionType = "multiple-choice";
+  } else {
+    letters = ["A","B","C"];
+    letterList = "A, B, C";
+    questionType = "multiple-choice";
+  }
+
+  // Build avoid-repeat block from stored history
+  var usedQs = getUsedQuestions(category);
+  var avoidBlock = "";
+  if(usedQs.length > 0){
+    var toSend = usedQs.slice(0, 60);
+    avoidBlock = "\n\nYOU HAVE ALREADY USED THESE QUESTIONS — DO NOT REPEAT THEM OR ANY CLOSE VARIATION:\n"
+      + toSend.map(function(q, i){ return (i+1) + ". " + q; }).join("\n")
+      + "\n\nChoose completely different topics, people, places and facts. Spread your questions across diverse sub-topics within the category.";
+  }
+
+  var systemPrompt = [
+    "You are a professional quiz writer for Bri.A.Napa quiz nights.",
+    "You produce accurate, entertaining, varied questions across a genuinely wide range of sub-topics.",
+    "RULES:",
+    "1. Return ONLY valid JSON — no preamble, no markdown code fences, no explanation.",
+    "2. Every answer must be factually correct and verifiable.",
+    "3. Wrong options must be plausible but clearly incorrect.",
+    "4. Match difficulty exactly.",
+    "5. For Kids (Easy), all questions must suit ages 7-12.",
+    "6. Spread questions — no two questions from the same narrow sub-topic.",
+    "7. Never repeat or closely paraphrase a question already used.",
+    "8. For qm_note: write one entertaining sentence the quizmaster can read after revealing the answer — a fun fact, surprising context, or witty remark. Keep it short and pub-friendly."
+  ].join("\n");
+
+  var userPrompt, jsonExample;
+  if(isOpen){
+    jsonExample = '{\n  "questions": [\n    {\n      "number": 1,\n      "question": "Question text?",\n      "options": {},\n      "answer": "",\n      "answer_text": "The correct answer"\n    }\n  ]\n}';
+    userPrompt = "Generate exactly " + count + " open-answer quiz questions (NO multiple choice options).\n"
+      + "Category: " + category + "\n"
+      + "Difficulty: " + diffLabel + "\n"
+      + "Each question should have a single clear correct answer. Leave options as an empty object {}."
+      + avoidBlock
+      + "\n\nReturn ONLY this JSON structure:\n" + jsonExample
+      + "\n\nReturn ONLY the JSON object. Nothing before or after it.";
+  } else if(isTF){
+    jsonExample = '{\n  "questions": [\n    {\n      "number": 1,\n      "question": "Question text?",\n      "options": {"A": "True", "B": "False"},\n      "answer": "A",\n      "answer_text": "True — explanation here"\n    }\n  ]\n}';
+    userPrompt = "Generate exactly " + count + " True/False quiz questions.\n"
+      + "Category: " + category + "\n"
+      + "Difficulty: " + diffLabel + "\n"
+      + "Option A must always be True, Option B must always be False. Mix answers so it is not always True."
+      + avoidBlock
+      + "\n\nReturn ONLY this JSON structure:\n" + jsonExample
+      + "\n\nReturn ONLY the JSON object. Nothing before or after it.";
+  } else {
+    jsonExample = '{\n  "questions": [\n    {\n      "number": 1,\n      "question": "Question text?",\n      "options": {"A": "Option A", "B": "Option B", "C": "Option C"},\n      "answer": "B",\n      "answer_text": "Full answer"\n    }\n  ]\n}';
+    userPrompt = "Generate exactly " + count + " multiple-choice quiz questions.\n"
+      + "Category: " + category + "\n"
+      + "Difficulty: " + diffLabel + "\n"
+      + "Options per question: " + ansCount + " (labelled " + letterList + ")"
+      + avoidBlock
+      + "\n\nReturn ONLY this JSON structure:\n" + jsonExample
+      + "\n\nReturn ONLY the JSON object. Nothing before or after it.";
+  }
+
+  var quizController = new AbortController();
+  var quizTimeout = setTimeout(function(){ quizController.abort(); }, 30000);
+  fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    signal: quizController.signal,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }]
+    })
+  })
+  .then(function(r){ clearTimeout(quizTimeout); return r.json(); })
+  .then(function(data){
+    document.getElementById("loading-state").style.display = "none";
+    document.getElementById("gen-btn").disabled = false;
+
+    if(data.error){
+      showErr("API Error: " + (data.error.message || "Unknown error. Check your API key and credit balance."));
+      document.getElementById("empty-state").style.display = "block";
+      return;
+    }
+    if(!data.content || !data.content[0] || !data.content[0].text){
+      showErr("Unexpected response from API. Please try again.");
+      document.getElementById("empty-state").style.display = "block";
+      return;
+    }
+
+    var raw = data.content[0].text.trim();
+    raw = raw.replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```\s*$/,"").trim();
+
+    var parsed;
+    try{ parsed = JSON.parse(raw); }
+    catch(e){
+      showErr("Could not parse quiz response. Please try again.");
+      document.getElementById("empty-state").style.display = "block";
+      return;
+    }
+
+    if(!parsed.questions || !Array.isArray(parsed.questions) || !parsed.questions.length){
+      showErr("Quiz data was empty. Please try again.");
+      document.getElementById("empty-state").style.display = "block";
+      return;
+    }
+
+    currentQuiz = {
+      title: quizTitle,
+      subtitle: quizSub,
+      category: category,
+      difficulty: diffLabel,
+      questions: parsed.questions,
+      generated: new Date().toLocaleDateString("en-GB") + " " + new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})
+    };
+
+    renderQuiz(currentQuiz);
+    renderAnswerSheet(currentQuiz);
+    saveToHistory(currentQuiz);
+    document.getElementById("print-btn").disabled = false;
+    document.getElementById("print-toggle").style.display = "flex";
+    var qmToggle = document.getElementById("ptog-qm");
+    if(qmToggle) qmToggle.style.display = parsed.questions[0] && parsed.questions[0].qm_note ? "block" : "none";
+    setPrintMode("quiz");
+    // body print class applied only at print time via doPrint()
+  })
+  .catch(function(err){
+    clearTimeout(quizTimeout);
+    document.getElementById("loading-state").style.display = "none";
+    document.getElementById("gen-btn").disabled = false;
+    document.getElementById("empty-state").style.display = "block";
+    showErr(err.name === "AbortError" ? "Request timed out (30s). Try again." : "Connection error. (" + err.message + ")");
+  });
+}
+
+// ── RENDER QUIZ ────────────────────────────────────────────
+function renderQuiz(quiz){
+  var out = document.getElementById("quiz-output");
+  var qs = quiz.questions;
+  var questionsHtml = "";
+  qs.forEach(function(q){
+    var optsHtml = "";
+    var optKeys = Object.keys(q.options || {});
+    if(optKeys.length > 0){
+      optKeys.forEach(function(letter){
+        optsHtml += '<div class="q-opt"><span class="q-opt-letter">' + letter + '</span><span>' + esc(q.options[letter]) + '</span></div>';
+      });
+    } else {
+      // Open answer — show a blank write-in line
+      optsHtml = '<div class="q-opt" style="border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:4px;margin-top:4px;min-width:200px;color:rgba(255,255,255,.3);font-style:italic;">Answer: ___________________________</div>';
+    }
+    questionsHtml += '<div class="q-block">'
+      + '<div class="q-num">QUESTION ' + q.number + '</div>'
+      + '<div class="q-text">' + esc(q.question) + '</div>'
+      + '<div class="q-options">' + optsHtml + '</div>'
+      + (q.qm_note ? '<div class="qm-note-label no-print-quiz">🎤 QM NOTE</div><div class="qm-note no-print-quiz">' + esc(q.qm_note) + '</div>' : '')
+      + '</div>';
+  });
+
+  var answersHtml = "";
+  qs.forEach(function(q){
+    answersHtml += '<div class="ans-item"><span class="ans-num">Q' + q.number + ':</span> ' + esc(q.answer) + ' \u2014 ' + esc(q.answer_text) + '</div>';
+  });
+
+  out.innerHTML = '<div class="output-actions no-print">'
+    + '<button class="btn-gold btn-sm" onclick="doPrint()">Print Quiz</button>'
+    + '<button class="btn-ghost btn-sm" onclick="generateQuiz()">Regenerate</button>'
+    + '<button class="btn-ghost btn-sm" onclick="clearQuiz()">Clear</button>'
+    + '</div>'
+    + '<div class="quiz-output">'
+    + '<div class="quiz-header">'
+    + '<div class="quiz-title">' + esc(quiz.title) + '</div>'
+    + '<div class="quiz-meta">'
+    + (quiz.subtitle ? esc(quiz.subtitle) + ' &bull; ' : '')
+    + esc(quiz.category) + ' &bull; ' + esc(quiz.difficulty) + ' &bull; ' + qs.length + ' Questions &bull; ' + quiz.generated
+    + '</div></div>'
+    + '<div class="quiz-body">' + questionsHtml + '</div>'
+    + '<div class="answers-section">'
+    + '<div class="answers-title">ANSWERS \u2014 QUIZMASTER ONLY</div>'
+    + '<div class="answers-grid">' + answersHtml + '</div>'
+    + '</div></div>';
+
+  out.style.display = "block";
+}
+
+// ── HISTORY ────────────────────────────────────────────────
+function saveToHistory(quiz){
+  try{
+    var hist = JSON.parse(localStorage.getItem("casc_quiz_hist") || "[]");
+    hist.unshift({ title:quiz.title, category:quiz.category, difficulty:quiz.difficulty, count:quiz.questions.length, generated:quiz.generated, quiz:quiz });
+    if(hist.length > 20) hist = hist.slice(0,20);
+    localStorage.setItem("casc_quiz_hist", JSON.stringify(hist));
+    renderHistory();
+  } catch(e){}
+}
+
+function renderHistory(){
+  var list = document.getElementById("hist-list");
+  try{
+    var hist = JSON.parse(localStorage.getItem("casc_quiz_hist") || "[]");
+    if(!hist.length){ list.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:4px 0;">No quizzes generated yet.</div>'; return; }
+    list.innerHTML = "";
+    hist.forEach(function(h){
+      var d = document.createElement("div");
+      d.className = "hist-item";
+      d.innerHTML = '<div><div class="hist-label">' + esc(h.category) + '</div><div class="hist-meta">' + esc(h.difficulty) + ' &bull; ' + h.count + 'Q &bull; ' + esc(h.generated) + '</div></div>';
+      d.onclick = function(){ if(h.quiz){ currentQuiz=h.quiz; renderQuiz(h.quiz); document.getElementById("print-btn").disabled=false; } };
+      list.appendChild(d);
+    });
+  } catch(e){ list.innerHTML = '<div style="font-size:10px;color:var(--muted);">Could not load history.</div>'; }
+}
+
+function clearHistory(){
+  if(!confirm("Clear all quiz history? This also resets the repeat-question memory.")) return;
+  localStorage.removeItem("casc_quiz_hist");
+  renderHistory();
+}
+
+// ── PRINT MODE ────────────────────────────────────────────
+var printMode = "quiz";
+function setPrintMode(mode){
+  printMode = mode;
+  var qBtn = document.getElementById("ptog-quiz");
+  var aBtn = document.getElementById("ptog-answer");
+  var qOut = document.getElementById("quiz-output");
+  var aOut = document.getElementById("answer-sheet-output");
+  if(qBtn) qBtn.classList.toggle("on", mode === "quiz");
+  if(aBtn) aBtn.classList.toggle("on", mode === "answer");
+  if(qOut) qOut.style.display = mode === "quiz" ? "block" : "none";
+  if(aOut) aOut.style.display = mode === "answer" ? "block" : "none";
+  // body print class applied only at print time via doPrint()
+}
+
+// ── RENDER ANSWER SHEET ────────────────────────────────────
+function makeRow(q){
+  return '<div class="as-row">'
+    + '<div class="as-qnum">Q' + q.number + '</div>'
+    + '<div class="as-line"></div>'
+    + '<div class="as-mark">'
+    + '<div class="as-mark-item"><div class="as-box-label">RIGHT</div><div class="as-box tick"></div></div>'
+    + '<div class="as-mark-item"><div class="as-box-label">WRONG</div><div class="as-box cross"></div></div>'
+    + '</div>'
+    + '</div>';
+}
+
+function renderAnswerSheet(quiz){
+  var out = document.getElementById("answer-sheet-output");
+  if(!out) return;
+  var qs = quiz.questions;
+  var bodyHtml = "";
+
+  // Always use 2-column layout: split questions evenly left/right
+  var half = Math.ceil(qs.length / 2);
+  var leftQs = qs.slice(0, half);
+  var rightQs = qs.slice(half);
+  var leftHtml = leftQs.map(makeRow).join("");
+  var rightHtml = rightQs.map(makeRow).join("");
+  bodyHtml = '<div class="as-cols">'
+    + '<div class="as-col">' + leftHtml + '</div>'
+    + '<div class="as-col">' + rightHtml + '</div>'
+    + '</div>';
+
+  out.innerHTML = '<div class="output-actions no-print">'
+    + '<button class="btn-gold btn-sm" onclick="doPrint()">🖨 Print Answer Sheet</button>'
+    + '</div>'
+    + '<div class="as-wrap">'
+    + '<div class="as-header">'
+    + '<div class="as-title">' + esc(quiz.title) + '</div>'
+    + '<div class="as-meta">'
+    + (quiz.subtitle ? esc(quiz.subtitle) + ' &bull; ' : '')
+    + esc(quiz.category) + ' &bull; ' + qs.length + ' Questions &bull; ' + quiz.generated
+    + '</div></div>'
+    + '<div class="as-team-row">'
+    + '<div class="as-team-label">TEAM NAME:</div>'
+    + '<div class="as-team-line"></div>'
+    + '</div>'
+    + '<div class="as-body">' + bodyHtml + '</div>'
+    + '<div class="as-footer">'
+    + '<div class="as-total-label">TOTAL SCORE</div>'
+    + '<div class="as-total-box">'
+    + '<div class="as-total-val"></div>'
+    + '<div class="as-total-denom">&nbsp;/ ' + qs.length + '</div>'
+    + '</div>'
+    + '<div class="as-est">BRI.A.NAPA</div>'
+    + '</div>'
+    + '</div>';
+}
+
+// ── UTILITIES ──────────────────────────────────────────────
+function esc(str){
+  if(!str) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function showErr(msg){ document.getElementById("gen-err").textContent = msg; }
+// ── TIEBREAKER ────────────────────────────────────────────
+function generateTiebreaker(){
+  var apiKey = (localStorage.getItem("casc_quiz_api_key") || "").trim();
+  if(!apiKey || !apiKey.startsWith("sk-ant-")){ document.getElementById("tb-err").textContent = "Add your API key first."; return; }
+  var count = parseInt(document.getElementById("tb-count").value) || 1;
+  var cat = document.getElementById("tb-category").value;
+  var btn = document.getElementById("tb-btn");
+  btn.disabled = true; btn.textContent = "GENERATING...";
+  document.getElementById("tb-err").textContent = "";
+
+  var prompt = "Generate exactly " + count + " tiebreaker quiz question" + (count>1?"s":"") + " for category: " + cat + "."
+    + " Tiebreaker questions must have a single precise answer — ideally a number, year, name or specific fact."
+    + " They should be answerable but require accurate knowledge. Teams that are tied write their best guess — closest wins."
+    + " Return ONLY this JSON structure: tiebreakers array with number, question, answer, hint fields."
+    + " Return ONLY the JSON object. Nothing else.";
+
+  var tbController = new AbortController();
+  var tbTimeout = setTimeout(function(){ tbController.abort(); }, 20000);
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    signal: tbController.signal,
+    headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:800,messages:[{role:"user",content:prompt}]})
+  })
+  .then(function(r){ clearTimeout(tbTimeout); return r.json(); })
+  .then(function(data){
+    btn.disabled = false; btn.textContent = "⚡ GENERATE TIEBREAKER";
+    if(data.error){ document.getElementById("tb-err").textContent = "API Error: " + data.error.message; return; }
+    var raw = data.content[0].text.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```\s*$/,"").trim();
+    var parsed;
+    try{ parsed = JSON.parse(raw); } catch(e){ document.getElementById("tb-err").textContent = "Parse error. Try again."; return; }
+    var tbs = parsed.tiebreakers || [];
+    if(!tbs.length){ document.getElementById("tb-err").textContent = "No questions returned."; return; }
+    var html = '<div class="output-actions no-print"><button class="btn-gold btn-sm" onclick="window.print()">🖨 Print</button><button class="btn-ghost btn-sm" onclick="generateTiebreaker()">⚡ Regenerate</button></div>';
+    html += '<div class="quiz-output"><div class="quiz-header"><div class="quiz-title">⚡ TIEBREAKER</div><div class="quiz-meta">' + cat + ' &bull; ' + tbs.length + ' Question' + (tbs.length>1?"s":"") + '</div></div><div class="quiz-body">';
+    tbs.forEach(function(tb){
+      html += '<div class="tb-block">'
+        + '<div class="tb-num">TIEBREAKER ' + tb.number + '</div>'
+        + '<div class="tb-question">' + esc(tb.question) + '</div>'
+        + (tb.hint ? '<div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px;">📌 ' + esc(tb.hint) + '</div>' : '')
+        + '<div class="tb-answer">✓ ' + esc(tb.answer) + '</div>'
+        + '</div>';
+    });
+    html += '</div></div>';
+    var out = document.getElementById("tiebreaker-output");
+    out.innerHTML = html; out.style.display = "block";
+    out.scrollIntoView({behavior:"smooth",block:"start"});
+  })
+  .catch(function(err){ clearTimeout(tbTimeout); btn.disabled=false; btn.textContent="⚡ GENERATE TIEBREAKER"; document.getElementById("tb-err").textContent = err.name==="AbortError" ? "Timed out (20s). Try again." : "Error: "+err.message; });
+}
+
+// ── BATCH MODE ─────────────────────────────────────────────
+var batchSelectedCats = ["General Knowledge"];
+function toggleBatchCat(el){
+  el.classList.toggle("on");
+  var cat = el.dataset.cat;
+  if(el.classList.contains("on")){
+    if(!batchSelectedCats.includes(cat)) batchSelectedCats.push(cat);
+  } else {
+    batchSelectedCats = batchSelectedCats.filter(function(c){ return c !== cat; });
+  }
+}
+
+function generateBatch(){
+  var apiKey = (localStorage.getItem("casc_quiz_api_key") || "").trim();
+  if(!apiKey || !apiKey.startsWith("sk-ant-")){ document.getElementById("batch-err").textContent = "Add your API key first."; return; }
+  if(!batchSelectedCats.length){ document.getElementById("batch-err").textContent = "Select at least one category."; return; }
+
+  var qCount = parseInt(document.getElementById("batch-q-count").value) || 10;
+  var diff = document.getElementById("batch-difficulty").value;
+  var title = document.getElementById("quiz-title").value.trim() || "Bri.A.Napa Quiz Night";
+  var sub = document.getElementById("quiz-subtitle").value.trim() || "";
+  var btn = document.getElementById("batch-btn");
+  var prog = document.getElementById("batch-progress");
+  var progBar = document.getElementById("batch-progress-bar");
+  var progLabel = document.getElementById("batch-progress-label");
+
+  btn.disabled = true;
+  prog.style.display = "block";
+  document.getElementById("batch-err").textContent = "";
+  document.getElementById("batch-output").style.display = "none";
+
+  var rounds = [];
+  var total = batchSelectedCats.length;
+  var current = 0;
+
+  function generateNextRound(){
+    if(current >= total){
+      renderBatch(rounds, title, sub);
+      btn.disabled = false; prog.style.display = "none";
+      return;
+    }
+    var cat = batchSelectedCats[current];
+    progBar.style.width = Math.round((current/total)*100) + "%";
+    progLabel.textContent = "Round " + (current+1) + " of " + total + ": " + cat + "...";
+
+    var usedQs = getUsedQuestions(cat);
+    var avoidBlock = usedQs.length > 0
+      ? "\n\nDO NOT REPEAT: " + usedQs.slice(0,30).join(" | ")
+      : "";
+
+    var prompt = "Generate exactly " + qCount + " multiple-choice quiz questions.\nCategory: " + cat + "\nDifficulty: " + diff + "\nOptions: A, B, C" + avoidBlock
+      + "\n\nReturn ONLY: {\"questions\":[{\"number\":1,\"question\":\"?\",\"options\":{\"A\":\"?\",\"B\":\"?\",\"C\":\"?\"},\"answer\":\"A\",\"answer_text\":\"?\",\"qm_note\":\"?\"}]}";
+
+    var batchController = new AbortController();
+    var batchRoundTimeout = setTimeout(function(){ batchController.abort(); }, 30000);
+    fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      signal: batchController.signal,
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:3000,messages:[{role:"user",content:prompt}]})
+    })
+    .then(function(r){ clearTimeout(batchRoundTimeout); return r.json(); })
+    .then(function(data){
+      if(!data.error && data.content && data.content[0]){
+        var raw = data.content[0].text.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```\s*$/,"").trim();
+        try{
+          var parsed = JSON.parse(raw);
+          if(parsed.questions && parsed.questions.length){
+            rounds.push({ category:cat, difficulty:diff, questions:parsed.questions });
+          }
+        } catch(e){ progLabel.textContent = "Round " + (current+1) + " parse error — skipping."; }
+      } else if(data.error){
+        progLabel.textContent = "Round " + (current+1) + " API error — skipping.";
+      }
+      current++;
+      setTimeout(generateNextRound, 400);
+    })
+    .catch(function(err){
+      clearTimeout(batchRoundTimeout);
+      progLabel.textContent = err.name === "AbortError" ? "Round " + (current+1) + " timed out — skipping." : "Round " + (current+1) + " error — skipping.";
+      current++;
+      setTimeout(generateNextRound, 400);
+    });
+  }
+  generateNextRound();
+}
+
+function renderBatch(rounds, title, sub){
+  if(!rounds.length){ document.getElementById("batch-err").textContent = "No rounds generated. Try again."; return; }
+  var generated = new Date().toLocaleDateString("en-GB") + " " + new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  var html = '<div class="output-actions no-print">'
+    + '<button class="btn-gold btn-sm" onclick="window.print()">🖨 Print Full Night</button>'
+    + '<button class="btn-ghost btn-sm" onclick="generateBatch()">⚡ Regenerate</button>'
+    + '</div>';
+
+  rounds.forEach(function(round, ri){
+    var qs = round.questions;
+    var qHtml = "";
+    qs.forEach(function(q){
+      var optsHtml = Object.keys(q.options||{}).map(function(l){
+        return '<div class="q-opt"><span class="q-opt-letter">' + l + '</span><span>' + esc(q.options[l]) + '</span></div>';
+      }).join("");
+      qHtml += '<div class="q-block">'
+        + '<div class="q-num">Q' + q.number + '</div>'
+        + '<div class="q-text">' + esc(q.question) + '</div>'
+        + '<div class="q-options">' + optsHtml + '</div>'
+        + '</div>';
+    });
+    var ansHtml = qs.map(function(q){
+      return '<div class="ans-item"><span class="ans-num">Q' + q.number + ':</span> ' + esc(q.answer) + ' — ' + esc(q.answer_text) + '</div>';
+    }).join("");
+
+    html += '<div class="batch-round-block">'
+      + '<div class="batch-round-header">'
+      + '<div><div class="batch-round-title">ROUND ' + (ri+1) + ' — ' + esc(round.category) + '</div>'
+      + '<div class="batch-round-meta">' + round.difficulty + ' &bull; ' + qs.length + ' Questions</div></div>'
+      + '</div>'
+      + '<div class="quiz-body">' + qHtml + '</div>'
+      + '<div class="answers-section"><div class="answers-title">ANSWERS</div><div class="answers-grid">' + ansHtml + '</div></div>'
+      + '</div>';
+  });
+
+  var out = document.getElementById("batch-output");
+  out.innerHTML = html;
+  out.style.display = "block";
+  out.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function clearQuiz(){
+  currentQuiz = null;
+  document.getElementById("quiz-output").innerHTML = "";
+  document.getElementById("quiz-output").style.display = "none";
+  document.getElementById("answer-sheet-output").innerHTML = "";
+  document.getElementById("answer-sheet-output").style.display = "none";
+  document.getElementById("empty-state").style.display = "block";
+  document.getElementById("print-btn").disabled = true;
+  document.getElementById("print-toggle").style.display = "none";
+  showErr("");
+}
+function doPrint(){
+  var cls = printMode === "answer" ? "print-answer" : (printMode === "qm" ? "print-qm" : "print-quiz");
+  document.body.classList.add(cls);
+  window.onafterprint = function(){ document.body.classList.remove("print-quiz","print-answer","print-qm"); };
+  window.print();
+}
+</script>
+
+</body>
+</html>
