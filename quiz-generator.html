@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Bri.A.Napa — Quiz Generator</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1829;--bg2:#111f38;
+  --glass:rgba(255,255,255,0.055);--glass2:rgba(255,255,255,0.09);
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.16);
+  --accent:#4f8ef7;--accent2:#2b6de8;--accent3:#1a4ab0;
+  --gold:#f5a623;--gold2:#d4880a;
+  --green:#4caf7d;--red:#f56565;
+  --text:#e8f0ff;--muted:rgba(180,205,248,0.65);--dim:rgba(130,160,220,0.4);
+  --sidebar:260px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);}
+body{min-height:100vh;background:linear-gradient(150deg,#0a1220 0%,#0d1829 40%,#101e35 70%,#0d1829 100%);background-attachment:fixed;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(79,142,247,0.35);border-radius:4px;}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;height:52px;
+  background:rgba(10,18,35,0.92);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  display:flex;align-items:center;justify-content:space-between;padding:0 14px;
+  box-shadow:0 2px 24px rgba(0,0,0,0.35);}
+.hdr-brand{display:flex;align-items:center;gap:10px;}
+.hdr-icon{font-size:20px;}
+.hdr-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:20px;letter-spacing:3px;
+  background:linear-gradient(120deg,#8ab8ff,#fff 45%,#8ab8ff);background-size:250% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shine 4s linear infinite;}
+@keyframes shine{0%{background-position:250% center}100%{background-position:-250% center}}
+.hdr-sub{font-size:8px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-top:1px;}
+.hdr-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+
+/* PRINT TOGGLE */
+.ptoggle{display:flex;background:var(--glass);border:1px solid var(--border);border-radius:50px;padding:2px;gap:2px;}
+.ptog{border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:700;
+  padding:4px 9px;border-radius:50px;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:inherit;}
+.ptog.on{background:var(--accent2);color:#fff;box-shadow:0 2px 8px rgba(43,109,232,0.5);}
+
+/* LAYOUT */
+.layout{display:flex;height:calc(100vh - 52px);overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);flex-shrink:0;
+  background:rgba(8,15,30,0.75);
+  border-right:1px solid var(--border);
+  overflow-y:auto;overflow-x:hidden;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:transform .3s ease;}
+
+/* ACCORDION */
+.acc{border-bottom:1px solid rgba(255,255,255,0.055);}
+.acc-hdr{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;
+  user-select:none;transition:background .15s;-webkit-tap-highlight-color:transparent;}
+.acc-hdr:hover{background:rgba(255,255,255,0.04);}
+.acc-ico{font-size:13px;flex-shrink:0;}
+.acc-lbl{flex:1;font-size:9.5px;font-weight:800;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;}
+.acc-chv{font-size:13px;color:var(--dim);transition:transform .2s;display:inline-block;transform:rotate(0deg);}
+.acc-chv.open{transform:rotate(90deg);}
+.acc-body{padding:2px 12px 12px;display:none;}
+.acc-body.open{display:block;}
+
+/* FORM */
+.field{margin-bottom:9px;}
+.field:last-child{margin-bottom:0;}
+.lbl{display:block;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.9px;text-transform:uppercase;margin-bottom:4px;}
+.inp{width:100%;background:var(--glass2);border:1px solid var(--border);border-radius:9px;
+  padding:7px 11px;color:var(--text);font-size:12px;font-weight:500;outline:none;
+  font-family:inherit;transition:all .2s;-webkit-appearance:none;appearance:none;}
+.inp:focus{border-color:var(--accent);background:rgba(79,142,247,0.1);box-shadow:0 0 0 3px rgba(79,142,247,0.15);}
+.inp option{background:#1a2a4a;color:var(--text);}
+.api-inp{width:100%;background:var(--glass2);border:1px solid var(--border);border-radius:9px;
+  padding:7px 11px;color:var(--text);font-size:11px;font-weight:500;outline:none;
+  font-family:monospace;transition:all .2s;-webkit-appearance:none;}
+.api-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,0.15);}
+.api-st{font-size:10px;font-weight:600;margin-top:4px;min-height:13px;}
+.ok{color:var(--green);}.err{color:var(--red);}
+
+/* SLIDER */
+.sl-wrap{display:flex;align-items:center;gap:7px;}
+.sl-lbl{font-size:9px;font-weight:700;color:var(--dim);}
+.slider{flex:1;accent-color:var(--accent);cursor:pointer;height:4px;}
+
+/* CATEGORY GRID */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.cat-btn{border:1px solid var(--border);border-radius:11px;padding:7px 4px;cursor:pointer;
+  text-align:center;font-size:9px;font-weight:700;color:var(--muted);background:var(--glass);
+  transition:all .15s;line-height:1.4;-webkit-tap-highlight-color:transparent;}
+.cat-btn:hover{border-color:var(--accent);background:rgba(79,142,247,0.1);color:var(--text);}
+.cat-btn.on{border-color:var(--accent);color:#fff;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  box-shadow:0 2px 10px rgba(79,142,247,0.4);}
+.cat-em{font-size:14px;display:block;margin-bottom:2px;}
+
+/* BATCH CAT GRID */
+.bcat-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.bcat-btn{border:1px solid var(--border);border-radius:9px;padding:5px 4px;cursor:pointer;
+  text-align:center;font-size:8.5px;font-weight:700;color:var(--muted);background:var(--glass);
+  transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.bcat-btn.on{border-color:var(--accent);color:#fff;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);}
+
+/* PROGRESS */
+.prog-wrap{background:rgba(255,255,255,0.06);border-radius:50px;height:7px;margin:8px 0 4px;overflow:hidden;}
+.prog-bar{background:linear-gradient(90deg,var(--accent),var(--gold));height:100%;border-radius:50px;width:0%;transition:width .35s;}
+.prog-lbl{font-size:9px;font-weight:700;color:var(--muted);text-align:center;min-height:12px;}
+
+/* HISTORY */
+.hist-list{display:flex;flex-direction:column;gap:4px;max-height:140px;overflow-y:auto;}
+.hist-item{background:var(--glass);border:1px solid var(--border);border-radius:9px;
+  padding:7px 9px;cursor:pointer;transition:all .15s;}
+.hist-item:hover{background:var(--glass2);border-color:var(--accent);}
+.hist-lbl{font-size:11px;font-weight:700;color:var(--text);}
+.hist-meta{font-size:9px;color:var(--muted);margin-top:1px;}
+
+/* BUTTONS */
+.btn{border:1px solid var(--border2);border-radius:50px;padding:7px 14px;font-size:11px;
+  font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;}
+.btn-ghost{background:var(--glass);color:var(--muted);}
+.btn-ghost:hover{background:var(--glass2);color:var(--text);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  border-color:rgba(79,142,247,0.4);box-shadow:0 2px 12px rgba(79,142,247,0.3);}
+.btn-primary:hover{box-shadow:0 4px 20px rgba(79,142,247,0.5);transform:translateY(-1px);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a0500;
+  border-color:rgba(245,166,35,0.4);box-shadow:0 2px 12px rgba(245,166,35,0.3);font-weight:800;}
+.btn-gold:hover{box-shadow:0 4px 20px rgba(245,166,35,0.45);transform:translateY(-1px);}
+.btn:active{transform:translateY(0)!important;}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;}
+.btn-block{width:100%;justify-content:center;}
+
+/* GENERATE BUTTON */
+.gen-btn{font-family:'Bebas Neue',Impact,sans-serif;font-size:21px;letter-spacing:4px;
+  padding:14px 36px;border-radius:50px;
+  background:linear-gradient(135deg,#4f8ef7 0%,#2b6de8 45%,#1a4ab0 100%);
+  color:#fff;border:1px solid rgba(79,142,247,0.45);cursor:pointer;
+  transition:all .25s;width:100%;max-width:380px;display:block;
+  box-shadow:0 4px 28px rgba(79,142,247,0.4),0 0 0 1px rgba(255,255,255,0.08) inset;
+  text-shadow:0 1px 3px rgba(0,20,80,0.4);-webkit-tap-highlight-color:transparent;}
+.gen-btn:hover{box-shadow:0 6px 36px rgba(79,142,247,0.6);transform:translateY(-2px);}
+.gen-btn:active{transform:translateY(0);}
+.gen-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;
+  background:rgba(8,13,28,0.25);}
+
+/* GLASS CARD */
+.gcard{background:rgba(255,255,255,0.045);border:1px solid var(--border);border-radius:14px;
+  padding:14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.gcard-accent{border-left:3px solid var(--accent);}
+
+/* NOTICE */
+.notice-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:5px;}
+.notice-body{font-size:11px;color:var(--muted);line-height:1.6;font-weight:500;}
+
+/* GEN WRAP */
+.gen-wrap{text-align:center;padding:2px 0;}
+.gen-err{font-size:11px;color:var(--red);font-weight:700;text-align:center;margin-top:7px;min-height:15px;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:55px 20px;opacity:.55;}
+.empty-ico{font-size:50px;margin-bottom:12px;}
+.empty-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:20px;letter-spacing:3px;
+  color:var(--accent);margin-bottom:7px;}
+.empty-sub{font-size:11px;font-weight:500;color:var(--muted);line-height:1.6;}
+
+/* LOADING */
+.loading{text-align:center;padding:50px 20px;}
+.spin{width:40px;height:40px;border:3px solid rgba(79,142,247,0.18);border-top:3px solid var(--accent);
+  border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:17px;letter-spacing:2px;color:var(--accent);margin-bottom:5px;}
+.load-sub{font-size:11px;font-weight:500;color:var(--muted);}
+
+/* QUIZ CARD */
+.quiz-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 28px rgba(0,0,0,0.3);color:#1a1a2e;}
+.qc-head{background:linear-gradient(135deg,#1e6dc0 0%,#0e3d72 100%);padding:14px 18px;border-bottom:3px solid #f5a623;}
+.qc-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:21px;letter-spacing:3px;color:#fff;}
+.qc-meta{font-size:9px;color:rgba(200,225,255,0.9);font-weight:600;letter-spacing:.8px;margin-top:3px;}
+.qc-body{padding:12px 14px;background:#fff;}
+.q-block{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(100,150,210,0.12);}
+.q-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.q-num{display:inline-flex;align-items:center;background:linear-gradient(135deg,#2b8bd4,#0e3d72);
+  color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;border-radius:20px;
+  padding:2px 8px;margin-bottom:4px;}
+.q-text{font-size:13px;font-weight:700;color:#1a1a2e;line-height:1.5;margin-bottom:6px;}
+.q-opts{display:flex;flex-direction:column;gap:3px;}
+.q-opt{display:flex;align-items:flex-start;gap:6px;font-size:12px;font-weight:600;color:#2a3a5a;}
+.q-let{font-weight:700;color:#0e3d72;font-size:12px;min-width:14px;}
+.qm-note{font-size:11px;color:#5a3800;font-weight:600;margin-top:5px;font-style:italic;
+  padding:5px 9px;background:rgba(255,240,200,0.6);border-left:3px solid #f5a623;border-radius:0 9px 9px 0;}
+.qm-lbl{font-size:8px;font-weight:700;color:#e8920a;letter-spacing:1px;text-transform:uppercase;margin-top:5px;}
+.ans-sec{background:rgba(220,235,255,0.5);border-top:2px dashed rgba(100,150,210,0.4);padding:10px 14px;}
+.ans-title{font-size:10px;font-weight:700;color:#0e3d72;letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.ans-title::before{content:"✂";opacity:.5;}
+.ans-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;}
+@media(min-width:480px){.ans-grid{grid-template-columns:repeat(5,1fr);}}
+.ans-item{font-size:11px;font-weight:700;color:#1a1a2e;}
+.ans-num{color:#0e3d72;font-weight:800;}
+
+/* TIEBREAKER */
+.tb-block{background:rgba(220,238,255,0.5);border:1px solid rgba(100,160,230,0.35);
+  border-radius:13px;padding:13px 15px;margin-bottom:9px;}
+.tb-num{font-size:9px;font-weight:700;color:#0e3d72;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.tb-q{font-size:14px;font-weight:700;color:#1a1a2e;line-height:1.5;margin-bottom:7px;}
+.tb-ans{font-size:12px;font-weight:700;color:#1a7a1a;}
+
+/* BATCH */
+.batch-block{background:#fff;border-radius:13px;overflow:hidden;margin-bottom:10px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.2);color:#1a1a2e;}
+.batch-hdr{background:linear-gradient(135deg,#1e6dc0 0%,#0e3d72 100%);
+  padding:9px 13px;display:flex;align-items:center;justify-content:space-between;}
+.batch-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:15px;letter-spacing:2px;color:#fff;}
+.batch-meta{font-size:9px;color:rgba(200,225,255,0.9);font-weight:600;}
+
+/* OUTPUT ACTIONS */
+.out-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:5px;}
+
+/* ANSWER SHEET */
+.as-wrap{background:#fff;color:#000;border-radius:13px;overflow:hidden;
+  border:1px solid rgba(100,150,210,0.3);box-shadow:0 2px 12px rgba(0,0,0,0.2);}
+.as-head{background:linear-gradient(135deg,#1e6dc0 0%,#0e3d72 100%);
+  padding:11px 15px;border-bottom:3px solid #f5a623;}
+.as-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:18px;letter-spacing:3px;color:#fff;}
+.as-meta{font-size:9px;color:rgba(200,225,255,0.9);font-weight:600;letter-spacing:.8px;margin-top:2px;}
+.as-team{background:#dce8f8;padding:6px 15px;border-bottom:1px solid #c0d8f0;
+  display:flex;align-items:center;gap:12px;}
+.as-team-lbl{font-size:11px;font-weight:700;color:#0e3d72;white-space:nowrap;}
+.as-team-line{flex:1;border-bottom:2px solid #1e6dc0;height:17px;}
+.as-body{padding:7px 15px;}
+.as-cols{display:flex;gap:14px;}
+.as-col{flex:1;}
+.as-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #e4edf8;}
+.as-row:last-of-type{border-bottom:none;}
+.as-qnum{font-size:11px;font-weight:700;color:#0e3d72;min-width:22px;}
+.as-line{flex:1;border-bottom:1px solid #c0d0e8;height:15px;}
+.as-mark{display:flex;gap:5px;align-items:flex-end;flex-shrink:0;}
+.as-mark-item{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.as-box{width:17px;height:17px;border:2px solid #bbb;border-radius:4px;flex-shrink:0;}
+.as-box.tick{border-color:#1a8a1a;}.as-box.cross{border-color:#cc0000;}
+.as-box-lbl{font-size:6px;font-weight:700;color:#888;}
+.as-foot{background:#dce8f8;border-top:2px solid #1e6dc0;padding:7px 15px;
+  display:flex;align-items:center;justify-content:space-between;}
+.as-total-lbl{font-size:12px;font-weight:700;color:#0e3d72;}
+.as-total-box{display:flex;align-items:center;gap:7px;}
+.as-total-val{border-bottom:3px solid #1e6dc0;width:54px;height:20px;}
+.as-total-den{font-size:13px;font-weight:700;color:#0e3d72;}
+.as-est{font-size:8px;color:#888;font-weight:700;letter-spacing:1px;}
+
+/* MOBILE SIDEBAR TOGGLE */
+.mob-toggle{display:none;position:fixed;bottom:18px;left:18px;width:46px;height:46px;
+  border-radius:50%;background:var(--accent2);border:none;color:#fff;font-size:20px;
+  cursor:pointer;z-index:200;box-shadow:0 4px 18px rgba(43,109,232,0.5);
+  align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.sidebar-ov{display:none;position:fixed;inset:0;top:52px;background:rgba(0,0,0,0.55);z-index:140;}
+.sidebar-ov.open{display:block;}
+
+@media(max-width:680px){
+  .sidebar{position:fixed;top:52px;left:0;height:calc(100vh - 52px);z-index:150;transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .mob-toggle{display:flex;}
+  .hdr-sub{display:none;}
+}
+
+/* ═══════════════════════════════
+   PRINT STYLES
+═══════════════════════════════ */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body{background:#fff!important;margin:0!important;}
+  .hdr,.sidebar,.mob-toggle,.sidebar-ov,.out-actions,.gcard,.gen-wrap,.empty,
+  .loading,.no-print{display:none!important;}
+  .layout{display:block!important;height:auto!important;overflow:visible!important;}
+  .content{padding:0!important;background:none!important;gap:0!important;
+    display:block!important;overflow:visible!important;}
+  @page{size:A4 portrait;margin:.65cm .85cm;}
+
+  /* ── QUIZ / QM PRINT ── */
+  body.print-quiz #answer-sheet-output,
+  body.print-qm  #answer-sheet-output{display:none!important;}
+  body.print-quiz #quiz-output,
+  body.print-qm  #quiz-output{display:block!important;}
+
+  body.print-quiz .quiz-card,
+  body.print-qm  .quiz-card{border:none!important;border-radius:0!important;box-shadow:none!important;}
+
+  body.print-quiz .qc-head,
+  body.print-qm  .qc-head{
+    background:#1e6dc0!important;padding:6px 11px!important;
+    border-bottom:3px solid #f5a623!important;border-radius:0!important;margin-bottom:0!important;}
+  body.print-quiz .qc-title,
+  body.print-qm  .qc-title{color:#fff!important;font-size:14pt!important;}
+  body.print-quiz .qc-meta,
+  body.print-qm  .qc-meta{color:rgba(220,235,255,0.95)!important;font-size:6.5pt!important;}
+
+  body.print-quiz .qc-body,
+  body.print-qm  .qc-body{
+    padding:2px 7px!important;columns:2!important;
+    column-gap:11px!important;column-rule:1px solid #dde8f8!important;}
+
+  body.print-quiz .q-block,
+  body.print-qm  .q-block{
+    break-inside:avoid!important;page-break-inside:avoid!important;
+    margin-bottom:4px!important;padding-bottom:4px!important;
+    border-bottom:1px solid #eaeef8!important;display:block!important;flex:none!important;}
+  body.print-quiz .q-block:last-child,
+  body.print-qm  .q-block:last-child{border-bottom:none!important;}
+
+  body.print-quiz .q-num,
+  body.print-qm  .q-num{
+    background:#1e6dc0!important;color:#fff!important;font-size:5.5pt!important;
+    padding:1px 5px!important;border-radius:9px!important;margin-bottom:2px!important;
+    display:inline-block!important;}
+
+  body.print-quiz .q-text,
+  body.print-qm  .q-text{
+    font-size:8pt!important;font-weight:700!important;line-height:1.2!important;
+    margin-bottom:2px!important;color:#000!important;}
+
+  body.print-quiz .q-opt,
+  body.print-qm  .q-opt{
+    font-size:7pt!important;line-height:1.15!important;color:#111!important;
+    gap:3px!important;margin-bottom:1px!important;}
+
+  body.print-quiz .q-let,
+  body.print-qm  .q-let{color:#0e3d72!important;font-size:7pt!important;min-width:10px!important;}
+
+  body.print-quiz .qm-note,
+  body.print-quiz .qm-lbl{display:none!important;}
+  body.print-qm .qm-note{
+    font-size:6pt!important;color:#5a3800!important;
+    background:rgba(255,240,200,0.5)!important;padding:2px 5px!important;
+    margin-top:2px!important;border-left:2px solid #f5a623!important;}
+  body.print-qm .qm-lbl{color:#92400e!important;font-size:5.5pt!important;}
+
+  body.print-quiz .ans-sec,
+  body.print-qm  .ans-sec{
+    background:#dce8f8!important;border-top:2px dashed #99b8d8!important;
+    padding:5px 7px!important;margin-top:2px!important;
+    break-inside:avoid!important;page-break-inside:avoid!important;border-radius:0!important;}
+  body.print-quiz .ans-title,
+  body.print-qm  .ans-title{color:#0e3d72!important;font-size:6.5pt!important;margin-bottom:3px!important;}
+  body.print-quiz .ans-grid,
+  body.print-qm  .ans-grid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:2px 4px!important;}
+  body.print-quiz .ans-item,
+  body.print-qm  .ans-item{font-size:6.5pt!important;color:#000!important;}
+  body.print-quiz .ans-num,
+  body.print-qm  .ans-num{color:#0e3d72!important;font-size:6.5pt!important;}
+
+  /* ── ANSWER SHEET PRINT ── */
+  body.print-answer #quiz-output{display:none!important;}
+  body.print-answer #answer-sheet-output{display:block!important;}
+  body.print-answer .as-page{display:flex!important;flex-direction:column!important;min-height:270mm!important;}
+  body.print-answer .as-tile{flex:1!important;display:flex!important;flex-direction:column!important;border-bottom:2px dashed #bbb!important;}
+  body.print-answer .as-tile:last-child{border-bottom:none!important;}
+  body.print-answer .as-head{background:#1e6dc0!important;padding:4px 12px!important;border-radius:0!important;}
+  body.print-answer .as-title{color:#fff!important;font-size:11px!important;}
+  body.print-answer .as-meta{color:rgba(200,225,255,0.9)!important;font-size:7px!important;}
+  body.print-answer .as-team{background:#dce8f8!important;padding:3px 12px!important;border-bottom:1px solid #c0d8f0!important;}
+  body.print-answer .as-body{flex:1!important;display:flex!important;flex-direction:column!important;padding:2px 12px!important;background:#fff!important;}
+  body.print-answer .as-cols{display:flex!important;gap:10px!important;flex:1!important;align-items:stretch!important;}
+  body.print-answer .as-col{flex:1!important;display:flex!important;flex-direction:column!important;}
+  body.print-answer .as-row{flex:1!important;padding:1px 0!important;min-height:0!important;}
+  body.print-answer .as-qnum{font-size:8px!important;color:#0e3d72!important;min-width:18px!important;}
+  body.print-answer .as-line{flex:1!important;height:1px!important;background:#c0d0e8!important;}
+  body.print-answer .as-box{width:12px!important;height:12px!important;border-width:1.5px!important;border-radius:2px!important;}
+  body.print-answer .as-box.tick{border-color:#1a8a1a!important;}
+  body.print-answer .as-box.cross{border-color:#cc0000!important;}
+  body.print-answer .as-foot{background:#dce8f8!important;padding:3px 12px!important;border-top:2px solid #1e6dc0!important;}
+  body.print-answer .as-total-lbl{font-size:8px!important;color:#0e3d72!important;}
+  body.print-answer .as-total-den{font-size:8px!important;color:#0e3d72!important;}
+  body.print-answer .as-total-val{height:11px!important;width:30px!important;}
+
+  /* ── BATCH PRINT ── */
+  .batch-block{break-inside:avoid!important;page-break-inside:avoid!important;
+    border:none!important;border-radius:0!important;box-shadow:none!important;
+    margin-bottom:0!important;border-bottom:1px solid #ccd8ee!important;padding-bottom:4px!important;}
+  .batch-block:last-child{border-bottom:none!important;}
+  .batch-hdr{background:#1e6dc0!important;padding:5px 10px!important;border-radius:0!important;margin-bottom:3px!important;}
+  .batch-title{color:#fff!important;font-size:10pt!important;}
+  .batch-meta{color:rgba(220,235,255,0.95)!important;font-size:6.5pt!important;}
+  #batch-output .qc-body{padding:2px 7px!important;columns:2!important;column-gap:11px!important;}
+  #batch-output .q-block{break-inside:avoid!important;page-break-inside:avoid!important;
+    margin-bottom:4px!important;padding-bottom:4px!important;
+    border-bottom:1px solid #eef2fa!important;display:block!important;flex:none!important;}
+  #batch-output .q-block:last-child{border-bottom:none!important;}
+  #batch-output .q-num{background:#1e6dc0!important;color:#fff!important;
+    font-size:5.5pt!important;padding:1px 5px!important;border-radius:8px!important;display:inline-block!important;}
+  #batch-output .q-text{color:#000!important;font-size:7.5pt!important;line-height:1.2!important;margin-bottom:2px!important;font-weight:700!important;}
+  #batch-output .q-opt{color:#111!important;font-size:7pt!important;line-height:1.15!important;}
+  #batch-output .q-let{color:#0e3d72!important;font-size:7pt!important;min-width:10px!important;}
+  #batch-output .ans-sec{background:#dce8f8!important;border-top:1px dashed #99b8d8!important;
+    padding:3px 7px!important;border-radius:0!important;}
+  #batch-output .ans-title{color:#0e3d72!important;font-size:6.5pt!important;margin-bottom:2px!important;}
+  #batch-output .ans-grid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:1px 3px!important;}
+  #batch-output .ans-item{font-size:6.5pt!important;color:#000!important;}
+  #batch-output .ans-num{color:#0e3d72!important;font-size:6.5pt!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr no-print">
+  <div class="hdr-brand">
+    <span class="hdr-icon">🎤</span>
+    <div>
+      <div class="hdr-title">QUIZ GENERATOR</div>
+      <div class="hdr-sub">BRI.A.NAPA &bull; AI-POWERED &bull; PRINT READY</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="ptoggle" id="print-toggle" style="display:none;">
+      <button class="ptog on" id="ptog-quiz" onclick="setPrintMode('quiz')">📋 Quiz</button>
+      <button class="ptog" id="ptog-answer" onclick="setPrintMode('answer')">✅ Sheets</button>
+      <button class="ptog" id="ptog-qm" onclick="setPrintMode('qm')" style="display:none;">🎤 QM</button>
+    </div>
+    <button class="btn btn-ghost no-print" onclick="clearAll()">🗑 Clear</button>
+    <button class="btn btn-primary no-print" onclick="doPrint()">🖨 Print</button>
+  </div>
+</header>
+
+<div class="sidebar-ov" id="sidebar-ov" onclick="closeSidebar()"></div>
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- API KEY -->
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc('api')">
+        <span class="acc-ico">🔑</span><span class="acc-lbl">API Key</span>
+        <span class="acc-chv open" id="arr-api">›</span>
+      </div>
+      <div class="acc-body open" id="sec-api">
+        <div class="field">
+          <label class="lbl">Anthropic API Key</label>
+          <input class="api-inp" type="password" id="api-key-input" placeholder="sk-ant-..." oninput="saveKey()">
+          <div class="api-st" id="api-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc('settings')">
+        <span class="acc-ico">⚙️</span><span class="acc-lbl">Quiz Settings</span>
+        <span class="acc-chv" id="arr-settings">›</span>
+      </div>
+      <div class="acc-body" id="sec-settings">
+        <div class="field"><label class="lbl">Quiz Title</label>
+          <input class="inp" type="text" id="quiz-title" placeholder="Bri.A.Napa Quiz Night" value="Bri.A.Napa Quiz Night"></div>
+        <div class="field"><label class="lbl">Sub Title / Date</label>
+          <input class="inp" type="text" id="quiz-subtitle" placeholder="Round 1 — General Knowledge"></div>
+        <div class="field"><label class="lbl">Questions</label>
+          <select class="inp" id="quiz-count">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+            <option value="15">15 Questions</option>
+            <option value="20">20 Questions</option>
+          </select></div>
+        <div class="field"><label class="lbl">Difficulty — <span id="diff-label">Medium</span></label>
+          <div class="sl-wrap">
+            <span class="sl-lbl">Easy</span>
+            <input type="range" class="slider" id="difficulty" min="1" max="5" value="3" oninput="updateDiffLabel()">
+            <span class="sl-lbl">Hard</span>
+          </div></div>
+        <div class="field"><label class="lbl">Answer Options</label>
+          <select class="inp" id="answer-count">
+            <option value="0">Open Answer</option>
+            <option value="2">True / False</option>
+            <option value="3" selected>3 Options (A,B,C)</option>
+            <option value="4">4 Options (A,B,C,D)</option>
+          </select></div>
+      </div>
+    </div>
+
+    <!-- CATEGORY -->
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc('category')">
+        <span class="acc-ico">📚</span><span class="acc-lbl">Category</span>
+        <span class="acc-chv" id="arr-category">›</span>
+      </div>
+      <div class="acc-body" id="sec-category">
+        <div class="cat-grid" id="cat-grid">
+          <div class="cat-btn on" data-cat="General Knowledge" onclick="selectCat(this)"><span class="cat-em">🧠</span>General Knowledge</div>
+          <div class="cat-btn" data-cat="Music" onclick="selectCat(this)"><span class="cat-em">🎵</span>Music</div>
+          <div class="cat-btn" data-cat="Sport" onclick="selectCat(this)"><span class="cat-em">⚽</span>Sport</div>
+          <div class="cat-btn" data-cat="Film & TV" onclick="selectCat(this)"><span class="cat-em">🎬</span>Film & TV</div>
+          <div class="cat-btn" data-cat="History" onclick="selectCat(this)"><span class="cat-em">📜</span>History</div>
+          <div class="cat-btn" data-cat="Science & Nature" onclick="selectCat(this)"><span class="cat-em">🔬</span>Science</div>
+          <div class="cat-btn" data-cat="Food & Drink" onclick="selectCat(this)"><span class="cat-em">🍕</span>Food & Drink</div>
+          <div class="cat-btn" data-cat="Geography" onclick="selectCat(this)"><span class="cat-em">🌍</span>Geography</div>
+          <div class="cat-btn" data-cat="Kids (Easy)" onclick="selectCat(this)"><span class="cat-em">🧒</span>Kids (Easy)</div>
+          <div class="cat-btn" data-cat="Swimming & Sport" onclick="selectCat(this)"><span class="cat-em">🏊</span>Swimming</div>
+          <div class="cat-btn" data-cat="Mixed — all topics" onclick="selectCat(this)"><span class="cat-em">🎲</span>Mixed Bag</div>
+          <div class="cat-btn" data-cat="Trick Questions & Brain Teasers" onclick="selectCat(this)"><span class="cat-em">🤔</span>Brain Teasers</div>
+        </div>
+        <div class="field" style="margin-top:8px;"><label class="lbl">Custom Category</label>
+          <input class="inp" type="text" id="custom-cat" placeholder="e.g. 1980s Pop Music..."></div>
+      </div>
+    </div>
+
+    <!-- TIEBREAKER -->
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc('tb')">
+        <span class="acc-ico">⚡</span><span class="acc-lbl">Tiebreaker</span>
+        <span class="acc-chv" id="arr-tb">›</span>
+      </div>
+      <div class="acc-body" id="sec-tb">
+        <div class="field"><label class="lbl">Questions</label>
+          <select class="inp" id="tb-count">
+            <option value="1" selected>1 Question</option>
+            <option value="3">3 Questions</option>
+            <option value="5">5 Questions</option>
+          </select></div>
+        <div class="field"><label class="lbl">Category</label>
+          <select class="inp" id="tb-cat">
+            <option>General Knowledge</option><option>Sport</option><option>Music</option>
+            <option>Film & TV</option><option>Science & Nature</option>
+            <option>History</option><option>Geography</option><option>Mixed</option>
+          </select></div>
+        <button class="btn btn-gold btn-block" id="tb-btn" onclick="generateTiebreaker()" disabled>⚡ GENERATE TIEBREAKER</button>
+        <div id="tb-err" style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px;min-height:12px;"></div>
+      </div>
+    </div>
+
+    <!-- BATCH -->
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc('batch')">
+        <span class="acc-ico">📦</span><span class="acc-lbl">Batch — Full Night</span>
+        <span class="acc-chv" id="arr-batch">›</span>
+      </div>
+      <div class="acc-body" id="sec-batch">
+        <div class="field"><label class="lbl">Rounds (max 4 — tap to select)</label>
+          <div class="bcat-grid" id="bcat-grid">
+            <div class="bcat-btn on" data-cat="General Knowledge" onclick="toggleBCat(this)">🧠 Gen. Knowledge</div>
+            <div class="bcat-btn" data-cat="Music" onclick="toggleBCat(this)">🎵 Music</div>
+            <div class="bcat-btn" data-cat="Sport" onclick="toggleBCat(this)">⚽ Sport</div>
+            <div class="bcat-btn" data-cat="Film & TV" onclick="toggleBCat(this)">🎬 Film & TV</div>
+            <div class="bcat-btn" data-cat="History" onclick="toggleBCat(this)">📜 History</div>
+            <div class="bcat-btn" data-cat="Science & Nature" onclick="toggleBCat(this)">🔬 Science</div>
+            <div class="bcat-btn" data-cat="Geography" onclick="toggleBCat(this)">🌍 Geography</div>
+            <div class="bcat-btn" data-cat="Food & Drink" onclick="toggleBCat(this)">🍕 Food & Drink</div>
+          </div></div>
+        <div class="field"><label class="lbl">Questions Per Round</label>
+          <select class="inp" id="batch-q-count">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+          </select></div>
+        <div class="field"><label class="lbl">Difficulty</label>
+          <select class="inp" id="batch-diff">
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+            <option value="Mixed">Mixed</option>
+          </select></div>
+        <div id="batch-prog" style="display:none;">
+          <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+          <div class="prog-lbl" id="prog-lbl">Generating...</div>
+        </div>
+        <button class="btn btn-gold btn-block" id="batch-btn" onclick="generateBatch()" disabled>📦 GENERATE FULL NIGHT</button>
+        <div id="batch-err" style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px;min-height:12px;"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc('hist')">
+        <span class="acc-ico">📋</span><span class="acc-lbl">Recent Quizzes</span>
+        <span class="acc-chv" id="arr-hist">›</span>
+      </div>
+      <div class="acc-body" id="sec-hist">
+        <div class="hist-list" id="hist-list">
+          <div style="font-size:10px;color:var(--dim);padding:4px 0;">No quizzes generated yet.</div>
+        </div>
+        <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="clearHistory()">Clear History</button>
+      </div>
+    </div>
+
+    <!-- ARCHIVE — Export / Import -->
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc('archive')">
+        <span class="acc-ico">📁</span><span class="acc-lbl">Archive — Save &amp; Load</span>
+        <span class="acc-chv" id="arr-archive">›</span>
+      </div>
+      <div class="acc-body" id="sec-archive">
+        <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:8px;line-height:1.6;">Export quizzes as files. Reload any time — no API tokens spent. Filename includes topic, difficulty &amp; question count.</div>
+        <button class="btn btn-primary btn-block" id="export-btn" onclick="exportQuiz()" disabled>⬇️ Export Current Quiz</button>
+        <div style="margin:8px 0;border-top:1px solid var(--border);padding-top:8px;">
+          <button class="btn btn-ghost btn-block" onclick="document.getElementById('import-file').click()">📂 Import Quiz from File</button>
+          <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importQuiz(event)">
+          <div id="import-status" style="font-size:10px;font-weight:600;color:var(--green);margin-top:5px;min-height:13px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content" id="content">
+    <div class="gcard gcard-accent no-print" id="api-notice">
+      <div class="notice-title">ℹ️ Getting Started</div>
+      <div class="notice-body">Enter your Anthropic API key in the sidebar. Saved to this device only. Get a key at <strong>console.anthropic.com</strong> — pay-as-you-go, each quiz costs pennies.</div>
+    </div>
+    <div class="gen-wrap no-print">
+      <button class="gen-btn" id="gen-btn" onclick="generateQuiz()" disabled>⚡ GENERATE QUIZ</button>
+      <div class="gen-err" id="gen-err"></div>
+    </div>
+    <div class="empty" id="empty-state">
+      <div class="empty-ico">🧩</div>
+      <div class="empty-title">Ready to Generate</div>
+      <div class="empty-sub">Pick your category and difficulty<br>then hit Generate Quiz.<br>Print-ready — 10 questions on 1 A4 sheet.</div>
+    </div>
+    <div class="loading" id="loading-state" style="display:none;">
+      <div class="spin"></div>
+      <div class="load-title">Generating Your Quiz...</div>
+      <div class="load-sub">AI is crafting quality questions — about 10 seconds</div>
+    </div>
+    <div id="quiz-output" style="display:none;"></div>
+    <div id="answer-sheet-output" style="display:none;"></div>
+    <div id="tb-output" style="display:none;"></div>
+    <div id="batch-output" style="display:none;"></div>
+  </main>
+</div>
+
+<script>
+/* ── STATE ── */
+var selectedCat='General Knowledge',currentQuiz=null;
+var DIFF={1:'Very Easy',2:'Easy',3:'Medium',4:'Hard',5:'Very Hard'};
+var batchCats=['General Knowledge'];
+var printMode='quiz';
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded',function(){
+  var k=localStorage.getItem('casc_quiz_api_key')||'';
+  if(k){document.getElementById('api-key-input').value=k;updateKeyStatus(k);}
+  initAccordions();
+  renderHistory();
+});
+
+/* ── ACCORDION ── */
+var ACC_DEF={api:true,settings:false,category:false,tb:false,batch:false,hist:false,archive:false};
+function toggleAcc(id){
+  var body=document.getElementById('sec-'+id);
+  var chv=document.getElementById('arr-'+id);
+  if(!body)return;
+  var open=body.classList.contains('open');
+  body.classList.toggle('open',!open);
+  if(chv)chv.classList.toggle('open',!open);
+  try{var s=JSON.parse(localStorage.getItem('acc_s')||'{}');s[id]=!open;localStorage.setItem('acc_s',JSON.stringify(s));}catch(e){}
+}
+function initAccordions(){
+  try{
+    var s=JSON.parse(localStorage.getItem('acc_s')||'{}');
+    Object.keys(ACC_DEF).forEach(function(id){
+      var body=document.getElementById('sec-'+id);
+      var chv=document.getElementById('arr-'+id);
+      if(!body)return;
+      var open=s.hasOwnProperty(id)?s[id]:ACC_DEF[id];
+      body.classList.toggle('open',open);
+      if(chv)chv.classList.toggle('open',open);
+    });
+  }catch(e){}
+}
+
+/* ── MOBILE SIDEBAR ── */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-ov').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-ov').classList.remove('open');
+}
+
+/* ── API KEY ── */
+function saveKey(){
+  var v=document.getElementById('api-key-input').value.trim();
+  localStorage.setItem('casc_quiz_api_key',v);
+  updateKeyStatus(v);
+}
+function updateKeyStatus(v){
+  var st=document.getElementById('api-status');
+  var gen=document.getElementById('gen-btn');
+  var notice=document.getElementById('api-notice');
+  var tb=document.getElementById('tb-btn');
+  var bat=document.getElementById('batch-btn');
+  if(v&&v.startsWith('sk-ant-')){
+    st.className='api-st ok';st.textContent='✔ Key saved — ready to generate';
+    gen.disabled=false;if(notice)notice.style.display='none';
+    if(tb)tb.disabled=false;if(bat)bat.disabled=false;
+  }else if(v&&v.length>5){
+    st.className='api-st err';st.textContent='⚠ Key should start with sk-ant-';
+  }else{st.className='api-st';st.textContent='';}
+}
+
+/* ── HELPERS ── */
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escH(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showErr(m){document.getElementById('gen-err').textContent=m;}
+function selectCat(el){document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('on');});el.classList.add('on');selectedCat=el.dataset.cat;document.getElementById('custom-cat').value='';}
+function updateDiffLabel(){var v=document.getElementById('difficulty').value;document.getElementById('diff-label').textContent=DIFF[v]||'Medium';}
+
+/* ── DUPLICATE DETECTION ── */
+function getUsedQs(cat){
+  try{
+    var h=JSON.parse(localStorage.getItem('casc_quiz_hist')||'[]'),c=[],o=[];
+    h.forEach(function(x){if(x.quiz&&x.quiz.questions){x.quiz.questions.forEach(function(q){if(q.question){if(x.quiz.category===cat)c.push(q.question);else o.push(q.question);}});}});
+    return c.concat(o);
+  }catch(e){return[];}
+}
+function tooSimilar(nq,used){
+  var a=nq.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  for(var i=0;i<used.length;i++){
+    var b=used[i].toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+    if(a===b)return true;
+    var wa=a.split(' ').filter(function(w){return w.length>3;});
+    var wb=b.split(' ').filter(function(w){return w.length>3;});
+    if(wa.length<3)continue;
+    var m=wa.filter(function(w){return wb.indexOf(w)!==-1;});
+    if(m.length/wa.length>=0.7)return true;
+  }
+  return false;
+}
+
+/* Answer-based dedup — same short specific answer = same fact, regardless of category or phrasing */
+function sameAnswerFact(newAns,usedAnswers){
+  if(!newAns)return false;
+  var a=String(newAns).toLowerCase().replace(/[^a-z0-9]/g,'').trim();
+  if(!a||a.length>18)return false; /* only flag short specific answers like "au","paris","1969","hydrogen" */
+  for(var i=0;i<usedAnswers.length;i++){
+    var b=String(usedAnswers[i]||'').toLowerCase().replace(/[^a-z0-9]/g,'').trim();
+    if(b&&b===a)return true;
+  }
+  return false;
+}
+
+/* Full dedup check combining question text AND answer */
+function isDuplicate(newQ,newAns,usedQs,usedAnswers){
+  if(tooSimilar(newQ,usedQs))return true;
+  if(sameAnswerFact(newAns,usedAnswers))return true;
+  return false;
+}
+
+/* ── GENERATE QUIZ ── */
+function generateQuiz(){
+  var key=(localStorage.getItem('casc_quiz_api_key')||'').trim();
+  if(!key||!key.startsWith('sk-ant-')){showErr('Please enter a valid Anthropic API key first.');return;}
+  var cc=document.getElementById('custom-cat').value.trim();
+  var cat=cc||selectedCat;
+  var count=parseInt(document.getElementById('quiz-count').value)||10;
+  var dv=parseInt(document.getElementById('difficulty').value)||3;
+  var diff=DIFF[dv]||'Medium';
+  var ac=parseInt(document.getElementById('answer-count').value)||3;
+  var qt=document.getElementById('quiz-title').value.trim()||'Bri.A.Napa Quiz';
+  var qs=document.getElementById('quiz-subtitle').value.trim()||'';
+
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('loading-state').style.display='block';
+  document.getElementById('quiz-output').style.display='none';
+  showErr('');
+
+  var isOpen=ac===0,isTF=ac===2,letters,ll;
+  if(isOpen){letters=[];ll='';}else if(isTF){letters=['A','B'];ll='A, B';}
+  else if(ac===4){letters=['A','B','C','D'];ll='A, B, C, D';}
+  else{letters=['A','B','C'];ll='A, B, C';}
+
+  var used=getUsedQs(cat),avoid='';
+  if(used.length>0){avoid='\n\nCRITICAL — DO NOT REPEAT OR CLOSELY VARY:\n'+used.slice(0,150).map(function(q,i){return(i+1)+'. '+q;}).join('\n')+'\n\nPick obscure, niche, unexpected angles. Avoid classic clichés.';}
+  else{avoid='\n\nAvoid classic quiz night clichés. Pick interesting, varied, non-obvious questions.';}
+
+  var sys=[
+    'You are a professional quiz writer for Bri.A.Napa quiz nights.',
+    'RULES:',
+    '1. Return ONLY valid JSON — no preamble, no markdown fences.',
+    '2. ACCURACY IS NON-NEGOTIABLE. Only include a question if completely certain the answer is correct.',
+    '3. Wrong options must be plausible but clearly incorrect.',
+    '4. Match difficulty exactly.',
+    '5. For Kids (Easy), questions must suit ages 7-12.',
+    '6. Spread questions across diverse sub-topics.',
+    '7. qm_note: one entertaining sentence the quizmaster reads after revealing the answer.',
+  ].join('\n');
+
+  var prompt,ex;
+  if(isOpen){
+    ex='{"questions":[{"number":1,"question":"Question?","options":{},"answer":"","answer_text":"The answer"}]}';
+    prompt='Generate exactly '+count+' open-answer quiz questions.\nCategory: '+cat+'\nDifficulty: '+diff+avoid+'\n\nReturn ONLY:\n'+ex;
+  }else if(isTF){
+    ex='{"questions":[{"number":1,"question":"Question?","options":{"A":"True","B":"False"},"answer":"A","answer_text":"True — reason"}]}';
+    prompt='Generate exactly '+count+' True/False quiz questions.\nCategory: '+cat+'\nDifficulty: '+diff+avoid+'\n\nReturn ONLY:\n'+ex;
+  }else{
+    ex='{"questions":[{"number":1,"question":"Question?","options":{"A":"Opt A","B":"Opt B","C":"Opt C"},"answer":"B","answer_text":"Full answer","qm_note":"Fun fact"}]}';
+    prompt='Generate exactly '+count+' multiple-choice quiz questions.\nCategory: '+cat+'\nDifficulty: '+diff+'\nOptions: '+ac+' ('+ll+')'+avoid+'\n\nReturn ONLY:\n'+ex;
+  }
+
+  var ctrl=new AbortController(),to=setTimeout(function(){ctrl.abort();},75000);
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',signal:ctrl.signal,
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,system:sys,messages:[{role:'user',content:prompt}]})
+  })
+  .then(function(r){clearTimeout(to);return r.json();})
+  .then(function(data){
+    document.getElementById('loading-state').style.display='none';
+    if(data.error){showErr('API Error: '+(data.error.message||'Check your key and credit balance.'));document.getElementById('empty-state').style.display='block';return;}
+    if(!data.content||!data.content[0]||!data.content[0].text){showErr('Unexpected response. Try again.');document.getElementById('empty-state').style.display='block';return;}
+    var raw=data.content[0].text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    var parsed;try{parsed=JSON.parse(raw);}catch(e){showErr('Could not parse response. Try again.');document.getElementById('empty-state').style.display='block';return;}
+    if(!parsed.questions||!Array.isArray(parsed.questions)||!parsed.questions.length){showErr('Empty quiz returned. Try again.');document.getElementById('empty-state').style.display='block';return;}
+    var allUsed=getUsedQs(cat),clean=[],dups=0;
+    parsed.questions.forEach(function(q){
+      var usedQs=allUsed.concat(clean.map(function(x){return x.question;}));
+      var usedAns=clean.map(function(x){return x.answer_text||x.answer||'';});
+      if(q.question&&isDuplicate(q.question,q.answer_text||q.answer,usedQs,usedAns)){dups++;}
+      else{clean.push(q);}
+    });
+    if(dups>0)console.warn('BRI:NAPA — '+dups+' duplicate(s) removed.');
+    clean.forEach(function(q,i){q.number=i+1;});
+    if(!clean.length){showErr('All questions were duplicates. Clear history or try a different category.');document.getElementById('empty-state').style.display='block';return;}
+    currentQuiz={title:qt,subtitle:qs,category:cat,difficulty:diff,questions:clean,
+      generated:new Date().toLocaleDateString('en-GB')+' '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})};
+    renderQuiz(currentQuiz);
+    renderAnswerSheet(currentQuiz);
+    saveToHistory(currentQuiz);
+    document.getElementById('print-toggle').style.display='flex';
+    var qm=document.getElementById('ptog-qm');
+    if(qm)qm.style.display=(clean[0]&&clean[0].qm_note)?'block':'none';
+    setPrintMode('quiz');
+  })
+  .catch(function(err){
+    clearTimeout(to);
+    document.getElementById('loading-state').style.display='none';
+    /* ── OFFLINE FALLBACK ── */
+    var offQs=generateOfflineQuiz(cat,count);
+    if(offQs.length>0){
+      var offQuiz={title:qt,subtitle:(qs||'')+'  ⚡ Offline Mode',category:cat,difficulty:diff,questions:offQs,
+        generated:new Date().toLocaleDateString('en-GB')+' '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})};
+      currentQuiz=offQuiz;
+      renderQuiz(offQuiz);
+      renderAnswerSheet(offQuiz);
+      document.getElementById('print-toggle').style.display='flex';
+      setPrintMode('quiz');
+      document.getElementById('empty-state').style.display='none';
+      showErr('⚡ Offline mode — no internet/API. Using built-in question bank.');
+    }else{
+      document.getElementById('empty-state').style.display='block';
+      showErr(err.name==='AbortError'?'Request timed out. Try again.':'Connection error. ('+err.message+')');
+    }
+  });
+}
+
+/* ── RENDER QUIZ ── */
+function renderQuiz(quiz){
+  var out=document.getElementById('quiz-output');
+  var qs=quiz.questions,qh='';
+  qs.forEach(function(q){
+    var oh='',ok=Object.keys(q.options||{});
+    if(ok.length>0){ok.forEach(function(l){oh+='<div class="q-opt"><span class="q-let">'+l+'</span><span>'+esc(q.options[l])+'</span></div>';});}
+    else{oh='<div class="q-opt" style="border-bottom:1px solid rgba(100,150,210,0.2);padding-bottom:4px;margin-top:4px;color:rgba(90,110,150,0.4);font-style:italic;">Answer: ___________________________</div>';}
+    qh+='<div class="q-block"><div class="q-num">QUESTION '+q.number+'</div><div class="q-text">'+esc(q.question)+'</div><div class="q-opts">'+oh+'</div>'+(q.qm_note?'<div class="qm-lbl no-print">🎤 QM NOTE</div><div class="qm-note no-print">'+esc(q.qm_note)+'</div>':'')+'</div>';
+  });
+  var ah='';qs.forEach(function(q){ah+='<div class="ans-item"><span class="ans-num">Q'+q.number+':</span> '+esc(q.answer)+' — '+esc(q.answer_text)+'</div>';});
+  out.innerHTML='<div class="out-actions no-print"><button class="btn btn-gold" onclick="doPrint()">🖨 Print Quiz</button><button class="btn btn-ghost" onclick="generateQuiz()">↺ Regenerate</button><button class="btn btn-ghost" onclick="clearAll()">✕ Clear</button></div>'
+    +'<div class="quiz-card"><div class="qc-head"><div class="qc-title">'+esc(quiz.title)+'</div><div class="qc-meta">'+(quiz.subtitle?esc(quiz.subtitle)+' &bull; ':'')+esc(quiz.category)+' &bull; '+esc(quiz.difficulty)+' &bull; '+qs.length+' Questions &bull; '+quiz.generated+'</div></div>'
+    +'<div class="qc-body">'+qh+'</div><div class="ans-sec"><div class="ans-title">ANSWERS — QUIZMASTER ONLY</div><div class="ans-grid">'+ah+'</div></div></div>';
+  out.style.display='block';
+  var eb=document.getElementById('export-btn');if(eb)eb.disabled=false;
+}
+
+/* ── HISTORY ── */
+function saveToHistory(quiz){
+  try{
+    var h=JSON.parse(localStorage.getItem('casc_quiz_hist')||'[]');
+    h.unshift({title:quiz.title,category:quiz.category,difficulty:quiz.difficulty,count:quiz.questions.length,generated:quiz.generated,quiz:quiz});
+    if(h.length>20)h=h.slice(0,20);
+    localStorage.setItem('casc_quiz_hist',JSON.stringify(h));
+    renderHistory();
+  }catch(e){}
+}
+function renderHistory(){
+  var list=document.getElementById('hist-list');
+  try{
+    var h=JSON.parse(localStorage.getItem('casc_quiz_hist')||'[]');
+    if(!h.length){list.innerHTML='<div style="font-size:10px;color:var(--dim);padding:4px 0;">No quizzes generated yet.</div>';return;}
+    list.innerHTML='';
+    h.forEach(function(x){
+      var d=document.createElement('div');d.className='hist-item';
+      d.innerHTML='<div class="hist-lbl">'+esc(x.category)+'</div><div class="hist-meta">'+esc(x.difficulty)+' &bull; '+x.count+'Q &bull; '+esc(x.generated)+'</div>';
+      d.onclick=function(){if(x.quiz){currentQuiz=x.quiz;renderQuiz(x.quiz);}};
+      list.appendChild(d);
+    });
+  }catch(e){list.innerHTML='<div style="font-size:10px;color:var(--dim);">Could not load history.</div>';}
+}
+function clearHistory(){if(!confirm('Clear all quiz history? This also resets the repeat-question memory.'))return;localStorage.removeItem('casc_quiz_hist');renderHistory();}
+
+/* ── PRINT MODE ── */
+function setPrintMode(mode){
+  printMode=mode;
+  ['quiz','answer','qm'].forEach(function(m){
+    var b=document.getElementById('ptog-'+m);if(b)b.classList.toggle('on',m===mode);
+  });
+  var qo=document.getElementById('quiz-output');
+  var ao=document.getElementById('answer-sheet-output');
+  if(qo)qo.style.display=(mode==='quiz'||mode==='qm')?'block':'none';
+  if(ao)ao.style.display=mode==='answer'?'block':'none';
+}
+
+/* ── ANSWER SHEET ── */
+function makeRow(q){return'<div class="as-row"><div class="as-qnum">Q'+q.number+'</div><div class="as-line"></div><div class="as-mark"><div class="as-mark-item"><div class="as-box-lbl">RIGHT</div><div class="as-box tick"></div></div><div class="as-mark-item"><div class="as-box-lbl">WRONG</div><div class="as-box cross"></div></div></div></div>';}
+function makeTile(quiz){
+  var qs=quiz.questions,h=Math.ceil(qs.length/2);
+  var lh=qs.slice(0,h).map(makeRow).join('');
+  var rh=qs.slice(h).map(makeRow).join('');
+  return'<div class="as-tile"><div class="as-head"><div class="as-title">'+esc(quiz.title)+'</div><div class="as-meta">'+(quiz.subtitle?esc(quiz.subtitle)+' &bull; ':'')+esc(quiz.category)+' &bull; '+qs.length+' Questions &bull; '+quiz.generated+'</div></div>'
+    +'<div class="as-team"><div class="as-team-lbl">TEAM NAME:</div><div class="as-team-line"></div></div>'
+    +'<div class="as-body"><div class="as-cols"><div class="as-col">'+lh+'</div><div class="as-col">'+rh+'</div></div></div>'
+    +'<div class="as-foot"><div class="as-total-lbl">TOTAL SCORE</div><div class="as-total-box"><div class="as-total-val"></div><div class="as-total-den">&nbsp;/ '+qs.length+'</div></div><div class="as-est">BRI.A.NAPA</div></div></div>';
+}
+function renderAnswerSheet(quiz){
+  var out=document.getElementById('answer-sheet-output');if(!out)return;
+  var qs=quiz.questions;
+  var tpp=qs.length<=5?4:qs.length<=10?3:qs.length<=15?2:1;
+  var tiles='';for(var i=0;i<tpp;i++){tiles+=makeTile(quiz);}
+  out.innerHTML='<div class="out-actions no-print"><button class="btn btn-gold" onclick="doPrint()">🖨 Print Answer Sheets</button>'
+    +'<span style="font-size:10px;font-weight:700;color:var(--muted);">'+tpp+' copies per A4 — cut to separate</span></div>'
+    +'<div class="as-wrap no-print">'+makeTile(quiz)+'</div>'
+    +'<div class="as-page" style="display:none;">'+tiles+'</div>';
+}
+
+/* ── PRINT ── */
+function clearAll(){
+  currentQuiz=null;
+  ['quiz-output','answer-sheet-output','tb-output','batch-output'].forEach(function(id){
+    var el=document.getElementById(id);if(el){el.innerHTML='';el.style.display='none';}
+  });
+  document.getElementById('empty-state').style.display='block';
+  document.getElementById('print-toggle').style.display='none';
+  showErr('');
+}
+
+function doPrint(){
+  var bOut=document.getElementById('batch-output');
+  var bVis=bOut&&bOut.style.display!=='none'&&bOut.innerHTML.trim()!=='';
+  if(!currentQuiz&&!bVis){alert('Generate a quiz first, then print.');return;}
+  if(printMode==='answer'&&currentQuiz){
+    document.body.classList.add('print-answer');
+    window.onafterprint=function(){document.body.classList.remove('print-answer');};
+    window.print();return;
+  }
+
+  var BASE='<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    +'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#000;}'
+    +'@page{size:A4 portrait;margin:.65cm .85cm;}'
+    +'.ph{background:#1e6dc0;color:#fff;padding:6px 11px;}'
+    +'.ph h1{font-size:14pt;letter-spacing:2px;font-family:Impact,Arial,sans-serif;margin:0;color:#fff;}'
+    +'.ph p{font-size:6.5pt;color:rgba(220,235,255,0.95);margin:2px 0 0;}'
+    +'.gold{border-bottom:3px solid #f5a623;}'
+    +'.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 11px;padding:2px 7px;}'
+    +'.qb{break-inside:avoid;page-break-inside:avoid;border-bottom:1px solid #eaeef8;padding:4px 0;}'
+    +'.qb:last-child{border-bottom:none;}'
+    +'.qn{display:inline-block;background:#1e6dc0;color:#fff;font-size:5.5pt;font-weight:700;padding:1px 5px;border-radius:8px;margin-bottom:2px;letter-spacing:1px;}'
+    +'.qt{font-size:8pt;font-weight:700;line-height:1.2;margin-bottom:2px;color:#000;}'
+    +'.qo{font-size:7pt;line-height:1.15;color:#111;display:flex;gap:3px;margin-bottom:1px;}'
+    +'.ql{font-size:7pt;font-weight:700;color:#0e3d72;min-width:10px;}'
+    +'.qnote{font-size:6pt;color:#5a3800;background:rgba(255,240,200,0.5);border-left:2px solid #f5a623;padding:2px 5px;margin-top:2px;font-style:italic;}'
+    +'.ans{background:#dce8f8;border-top:2px dashed #99b8d8;padding:5px 7px;margin-top:2px;}'
+    +'.at{font-size:7pt;font-weight:700;color:#0e3d72;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}'
+    +'.ag{display:grid;grid-template-columns:repeat(5,1fr);gap:2px 4px;}'
+    +'.ai{font-size:7pt;color:#000;font-weight:700;}'
+    +'.an{font-weight:800;color:#0e3d72;}'
+    +'</style>';
+
+  var html='';
+
+  if(bVis&&!currentQuiz){
+    var rounds=[];
+    bOut.querySelectorAll('.batch-block').forEach(function(b){
+      rounds.push({
+        title:b.querySelector('.batch-title')?b.querySelector('.batch-title').textContent:'',
+        meta:b.querySelector('.batch-meta')?b.querySelector('.batch-meta').textContent:'',
+        qblocks:b.querySelectorAll('.q-block'),
+        ansItems:b.querySelectorAll('.ans-item')
+      });
+    });
+    html='<!DOCTYPE html><html><head><meta charset="UTF-8">'+BASE+'</head><body>';
+    rounds.forEach(function(r,ri){
+      html+='<div style="margin-bottom:5px;"><div class="ph gold"><h1>'+escH(r.title)+'</h1><p>'+escH(r.meta)+'</p></div>';
+      html+='<div class="cols">';
+      r.qblocks.forEach(function(qb){
+        var ne=qb.querySelector('.q-num'),te=qb.querySelector('.q-text'),opts=qb.querySelectorAll('.q-opt');
+        html+='<div class="qb"><div class="qn">'+(ne?ne.textContent:'')+'</div><div class="qt">'+(te?escH(te.textContent):'')+'</div>';
+        opts.forEach(function(o){var l=o.querySelector('.q-let');html+='<div class="qo"><span class="ql">'+(l?l.textContent:'')+'</span><span>'+escH(o.textContent.replace(l?l.textContent:'','').trim())+'</span></div>';});
+        html+='</div>';
+      });
+      html+='</div><div class="ans"><div class="at">✂ ANSWERS</div><div class="ag">';
+      r.ansItems.forEach(function(a){html+='<div class="ai">'+escH(a.textContent)+'</div>';});
+      html+='</div></div></div>';
+      if((ri+1)%2===0&&ri<rounds.length-1){html+='<div style="page-break-after:always;"></div>';}
+    });
+    html+='</body></html>';
+
+  }else if(currentQuiz){
+    var qs=currentQuiz.questions,showQM=(printMode==='qm');
+    html='<!DOCTYPE html><html><head><meta charset="UTF-8">'+BASE+'</head><body>';
+    html+='<div class="ph gold"><h1>'+escH(currentQuiz.title)+'</h1>';
+    html+='<p>'+(currentQuiz.subtitle?escH(currentQuiz.subtitle)+' &bull; ':'')+escH(currentQuiz.category)+' &bull; '+escH(currentQuiz.difficulty)+' &bull; '+qs.length+' Questions &bull; '+escH(currentQuiz.generated)+'</p></div>';
+    html+='<div class="cols">';
+    qs.forEach(function(q){
+      var opts=Object.keys(q.options||{});
+      html+='<div class="qb"><div class="qn">Q'+q.number+'</div><div class="qt">'+escH(q.question)+'</div>';
+      if(opts.length>0){opts.forEach(function(l){html+='<div class="qo"><span class="ql">'+l+'</span><span>'+escH(q.options[l])+'</span></div>';});}
+      else{html+='<div class="qo" style="color:#aaa;font-style:italic;border-bottom:1px solid #ccc;padding-bottom:3px;">Answer: ___________________________</div>';}
+      if(showQM&&q.qm_note){html+='<div class="qnote">🎤 '+escH(q.qm_note)+'</div>';}
+      html+='</div>';
+    });
+    html+='</div><div class="ans"><div class="at">✂ ANSWERS — QUIZMASTER ONLY</div><div class="ag">';
+    qs.forEach(function(q){html+='<div class="ai"><span class="an">Q'+q.number+':</span> '+escH(q.answer)+' — '+escH(q.answer_text)+'</div>';});
+    html+='</div></div></body></html>';
+  }
+
+  var w=window.open('','_blank');
+  if(!w){alert('Please allow popups for this page, then try again.');return;}
+  w.document.write(html);w.document.close();w.focus();
+  setTimeout(function(){w.print();},400);
+}
+
+/* ── TIEBREAKER ── */
+function generateTiebreaker(){
+  var key=(localStorage.getItem('casc_quiz_api_key')||'').trim();
+  if(!key||!key.startsWith('sk-ant-')){document.getElementById('tb-err').textContent='Add your API key first.';return;}
+  var count=parseInt(document.getElementById('tb-count').value)||1;
+  var cat=document.getElementById('tb-cat').value;
+  var btn=document.getElementById('tb-btn');
+  btn.disabled=true;btn.textContent='GENERATING...';
+  document.getElementById('tb-err').textContent='';
+
+  var prompt='Generate exactly '+count+' tiebreaker quiz question'+(count>1?'s':'')+' for: '+cat+'. Each must have a single precise answer (number, year, name, or specific fact). Teams write their best guess — closest wins.\nReturn ONLY: {"tiebreakers":[{"number":1,"question":"?","answer":"?","hint":"?"}]}';
+
+  var ctrl=new AbortController(),to=setTimeout(function(){ctrl.abort();},30000);
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',signal:ctrl.signal,
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompt}]})
+  })
+  .then(function(r){clearTimeout(to);return r.json();})
+  .then(function(data){
+    btn.disabled=false;btn.textContent='⚡ GENERATE TIEBREAKER';
+    if(data.error){document.getElementById('tb-err').textContent='API Error: '+data.error.message;return;}
+    var raw=data.content[0].text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    var parsed;try{parsed=JSON.parse(raw);}catch(e){document.getElementById('tb-err').textContent='Parse error. Try again.';return;}
+    var tbs=parsed.tiebreakers||[];
+    if(!tbs.length){document.getElementById('tb-err').textContent='No questions returned.';return;}
+    var html='<div class="out-actions no-print"><button class="btn btn-gold" onclick="doPrint()">🖨 Print</button><button class="btn btn-ghost" onclick="generateTiebreaker()">⚡ Regenerate</button></div>';
+    html+='<div class="quiz-card"><div class="qc-head"><div class="qc-title">⚡ TIEBREAKER</div><div class="qc-meta">'+cat+' &bull; '+tbs.length+' Question'+(tbs.length>1?'s':'')+'</div></div><div class="qc-body">';
+    tbs.forEach(function(tb){
+      html+='<div class="tb-block"><div class="tb-num">TIEBREAKER '+tb.number+'</div><div class="tb-q">'+esc(tb.question)+'</div>'+(tb.hint?'<div style="font-size:11px;color:#666;font-weight:600;margin-top:4px;">📌 '+esc(tb.hint)+'</div>':'')+'<div class="tb-ans">✓ '+esc(tb.answer)+'</div></div>';
+    });
+    html+='</div></div>';
+    var out=document.getElementById('tb-output');out.innerHTML=html;out.style.display='block';
+    out.scrollIntoView({behavior:'smooth',block:'start'});
+  })
+  .catch(function(err){
+    clearTimeout(to);btn.disabled=false;btn.textContent='⚡ GENERATE TIEBREAKER';
+    document.getElementById('tb-err').textContent=err.name==='AbortError'?'Timed out. Try again.':'Error: '+err.message;
+  });
+}
+
+/* ── BATCH (Sequential, max 4 rounds) ── */
+function toggleBCat(el){
+  var cat=el.dataset.cat;
+  if(el.classList.contains('on')){
+    el.classList.remove('on');
+    batchCats=batchCats.filter(function(c){return c!==cat;});
+  }else{
+    if(batchCats.length>=4){
+      var first=document.querySelector('.bcat-btn.on');
+      if(first){batchCats=batchCats.filter(function(c){return c!==first.dataset.cat;});first.classList.remove('on');}
+    }
+    el.classList.add('on');
+    if(!batchCats.includes(cat))batchCats.push(cat);
+  }
+}
+
+async function generateBatch(){
+  var key=(localStorage.getItem('casc_quiz_api_key')||'').trim();
+  if(!key||!key.startsWith('sk-ant-')){document.getElementById('batch-err').textContent='Add your API key first.';return;}
+  var cats=batchCats.slice(0,4);
+  if(!cats.length){document.getElementById('batch-err').textContent='Select at least one category.';return;}
+  var qc=parseInt(document.getElementById('batch-q-count').value)||10;
+  var diff=document.getElementById('batch-diff').value;
+  var title=document.getElementById('quiz-title').value.trim()||'Bri.A.Napa Quiz Night';
+  var sub=document.getElementById('quiz-subtitle').value.trim()||'';
+  var btn=document.getElementById('batch-btn');
+  var progWrap=document.getElementById('batch-prog');
+  var progBar=document.getElementById('prog-bar');
+  var progLbl=document.getElementById('prog-lbl');
+
+  btn.disabled=true;progWrap.style.display='block';
+  document.getElementById('batch-err').textContent='';
+  document.getElementById('batch-output').style.display='none';
+
+  var rounds=[];
+  var allBatchQA=[]; /* cross-round Q+A tracker — passed to each new round so the same fact can never reappear */
+
+  for(var i=0;i<cats.length;i++){
+    var cat=cats[i];
+    progLbl.textContent='Round '+(i+1)+' of '+cats.length+' — '+cat+'...';
+    progBar.style.width=Math.round((i/cats.length)*100)+'%';
+
+    var used=getUsedQs(cat);
+    var avoid=used.length>0?'\n\nDO NOT REPEAT THESE FROM PREVIOUS SESSIONS: '+used.slice(0,30).join(' | '):'';
+    var crossAvoid='';
+    if(allBatchQA.length>0){
+      var answerList=allBatchQA.map(function(x){return x.a;}).join(', ');
+      crossAvoid='\n\nCRITICAL — DO NOT USE ANY OF THESE ANSWERS (already used this quiz night): '+answerList+'\n\nRepeating any of these facts in any form is unacceptable.';
+    }
+    var prompt='Generate exactly '+qc+' multiple-choice quiz questions.\nCategory: '+cat+'\nDifficulty: '+diff+'\nOptions: A, B, C'+avoid+crossAvoid+'\n\nReturn ONLY: {"questions":[{"number":1,"question":"?","options":{"A":"?","B":"?","C":"?"},"answer":"A","answer_text":"?","qm_note":"?"}]}';
+
+    try{
+      let ctrl=new AbortController();
+      let roundTo=setTimeout(function(){ctrl.abort();},75000);
+      let resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',signal:ctrl.signal,
+        headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})
+      });
+      clearTimeout(roundTo);
+      let data=await resp.json();
+      if(!data.error&&data.content&&data.content[0]){
+        let raw=data.content[0].text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+        try{
+          let p=JSON.parse(raw);
+          if(p.questions&&p.questions.length){
+            /* post-generation answer-based dedup against all previous rounds */
+            let batchUsedQs=allBatchQA.map(function(x){return x.q;});
+            let batchUsedAns=allBatchQA.map(function(x){return x.a;});
+            let clean=p.questions.filter(function(q){
+              return !isDuplicate(q.question,q.answer_text||q.answer,batchUsedQs,batchUsedAns);
+            });
+            let removed=p.questions.length-clean.length;
+            if(removed>0)console.warn('BRI:NAPA batch — '+removed+' cross-round duplicate(s) removed from '+cat);
+            clean.forEach(function(q,idx){q.number=idx+1;});
+            if(clean.length>0){
+              rounds.push({idx:i,category:cat,difficulty:diff,questions:clean});
+              /* add to cross-round tracker for subsequent rounds */
+              clean.forEach(function(q){allBatchQA.push({q:q.question,a:String(q.answer_text||q.answer||'')});});
+            }
+          }
+        }catch(e){console.warn('Parse error: '+cat);}
+      }
+    }catch(err){console.warn('Error for round '+cat+': '+err.message);}
+  }
+
+  progBar.style.width='100%';
+  progLbl.textContent='Done — '+rounds.length+' of '+cats.length+' rounds generated.';
+  btn.disabled=false;
+  setTimeout(function(){progWrap.style.display='none';},2500);
+
+  renderBatch(rounds,title,sub);
+}
+
+function renderBatch(rounds,title,sub){
+  if(!rounds.length){document.getElementById('batch-err').textContent='No rounds generated. Try again.';return;}
+  var html='<div class="out-actions no-print"><button class="btn btn-gold" onclick="doPrint()">🖨 Print Full Night</button><button class="btn btn-ghost" onclick="generateBatch()">⚡ Regenerate</button></div>';
+  rounds.forEach(function(r,ri){
+    var qs=r.questions,qh='';
+    qs.forEach(function(q){
+      var oh=Object.keys(q.options||{}).map(function(l){return'<div class="q-opt"><span class="q-let">'+l+'</span><span>'+esc(q.options[l])+'</span></div>';}).join('');
+      qh+='<div class="q-block"><div class="q-num">Q'+q.number+'</div><div class="q-text">'+esc(q.question)+'</div><div class="q-opts">'+oh+'</div></div>';
+    });
+    var ah=qs.map(function(q){return'<div class="ans-item"><span class="ans-num">Q'+q.number+':</span> '+esc(q.answer)+' — '+esc(q.answer_text)+'</div>';}).join('');
+    html+='<div class="batch-block"><div class="batch-hdr"><div class="batch-title">ROUND '+(ri+1)+' — '+esc(r.category)+'</div><div class="batch-meta">'+r.difficulty+' &bull; '+qs.length+' Questions</div></div>'
+      +'<div class="qc-body">'+qh+'</div>'
+      +'<div class="ans-sec"><div class="ans-title">ANSWERS</div><div class="ans-grid">'+ah+'</div></div></div>';
+    if((ri+1)%2===0&&ri<rounds.length-1){html+='<div style="page-break-after:always;height:0;"></div>';}
+  });
+  var out=document.getElementById('batch-output');
+  out.innerHTML=html;out.style.display='block';
+  currentQuiz=null;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ── EXPORT / IMPORT ── */
+function exportQuiz(){
+  if(!currentQuiz){alert('No quiz to export.');return;}
+  var cat=(currentQuiz.category||'quiz').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  var diff=(currentQuiz.difficulty||'').toLowerCase();
+  var qc=currentQuiz.questions?currentQuiz.questions.length:0;
+  var fn='quiz-'+cat+'-'+diff+'-'+qc+'q.json';
+  var blob=new Blob([JSON.stringify(currentQuiz,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+}
+function importQuiz(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var st=document.getElementById('import-status');
+  st.style.color='var(--muted)';st.textContent='Loading...';
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var quiz=JSON.parse(e.target.result);
+      if(!quiz.questions||!Array.isArray(quiz.questions)||!quiz.questions.length){throw new Error('No questions found');}
+      currentQuiz=quiz;
+      renderQuiz(quiz);renderAnswerSheet(quiz);
+      document.getElementById('print-toggle').style.display='flex';
+      setPrintMode('quiz');
+      document.getElementById('empty-state').style.display='none';
+      document.getElementById('quiz-output').style.display='block';
+      st.style.color='var(--green)';st.textContent='✔ Loaded: '+esc(quiz.category)+' '+esc(quiz.difficulty)+' ('+quiz.questions.length+'Q)';
+      setTimeout(function(){st.textContent='';},5000);
+    }catch(err){st.style.color='var(--red)';st.textContent='⚠ Invalid file — import failed.';}
+  };
+  r.readAsText(f);
+  ev.target.value='';
+}
+
+/* ── OFFLINE QUIZ GENERATOR ── */
+/* Format: [answer, category, difficulty, question_variant_1, question_variant_2, ...] */
+var ODB=[
+/* GEOGRAPHY */
+['Paris','Geography','Easy','What is the capital of France?','In which city is the Eiffel Tower located?','Which European city is home to the Louvre museum?'],
+['France','Geography','Easy','In which country is Paris the capital city?','Which country is famous for baguettes and croissants?','In which country would you find the Palace of Versailles?'],
+['London','Geography','Easy','What is the capital of England?','In which city is Big Ben located?','Which city is home to Buckingham Palace?'],
+['Rome','Geography','Easy','What is the capital of Italy?','In which city is the Colosseum located?','Which European city is home to the Vatican?'],
+['Berlin','Geography','Medium','What is the capital of Germany?','In which city is the Brandenburg Gate?','Which city was divided by a wall until 1989?'],
+['Spain','Geography','Easy','In which country is Madrid the capital?','Which country is famous for paella and tapas?','In which country would you find the Sagrada Familia?'],
+['Australia','Geography','Easy','Which country has the Great Barrier Reef?','Which country has the kangaroo on its coat of arms?','On which continent is Sydney located?'],
+['Tokyo','Geography','Easy','What is the capital of Japan?','In which city is the Tokyo Skytree?','Which city hosted the 2021 Summer Olympics?'],
+['Egypt','Geography','Easy','In which country are the Great Pyramids of Giza?','In which country is Cairo the capital?','Which African country does the River Nile flow through?'],
+['Moscow','Geography','Medium','What is the capital of Russia?','In which city is the Kremlin located?','Which city is home to Red Square?'],
+['Mount Everest','Geography','Easy','What is the tallest mountain in the world?','Which mountain sits on the border of Nepal and Tibet?','What is the world\'s highest peak?'],
+['Brazil','Geography','Easy','In which country is the Amazon rainforest mainly located?','Which country is famous for the Rio Carnival?','Which country has Rio de Janeiro as a major city?'],
+['Canada','Geography','Easy','Which country shares the longest land border with the USA?','Which country has Ottawa as its capital?','Which is the second largest country in the world by area?'],
+['India','Geography','Easy','In which country is the Taj Mahal located?','Which country has New Delhi as its capital?','Which country has the world\'s third largest population?'],
+['China','Geography','Easy','In which country is the Great Wall located?','In which country is Beijing the capital?','Which country has the world\'s largest population?'],
+['Pacific Ocean','Geography','Medium','What is the world\'s largest ocean?','Which ocean lies between Asia and the Americas?','Which ocean covers the most surface area on Earth?'],
+['Athens','Geography','Medium','What is the capital of Greece?','In which city are the ancient ruins of the Parthenon?','Which city hosted the first modern Olympic Games in 1896?'],
+['Argentina','Geography','Medium','In which country is Buenos Aires the capital?','Which South American country is famous for its tango dance?','Which country is home to Patagonia?'],
+['Sahara','Geography','Medium','What is the world\'s largest hot desert?','Which desert spans across North Africa?','Which desert covers much of Morocco, Algeria, and Libya?'],
+['Amsterdam','Geography','Medium','What is the capital of the Netherlands?','Which city is known for its famous canals and the Anne Frank House?','In which city is the Rijksmuseum?'],
+['Iceland','Geography','Hard','Which island country is known as the Land of Fire and Ice?','Which country has Reykjavik as its capital?','Which European country has the most active volcanoes?'],
+['Norway','Geography','Medium','Which Scandinavian country is famous for its fjords?','In which country is Oslo the capital?','Which country is famous for the Northern Lights and borders Sweden to the west?'],
+['New Zealand','Geography','Medium','Which country has Wellington as its capital?','Which country consists of two main islands in the South Pacific?','Which country is home to the Maori people?'],
+['Kenya','Geography','Medium','Which African country is famous for the Masai Mara safari reserve?','In which country is Nairobi the capital?','Which African country is world-famous for its marathon runners?'],
+['Amazon','Geography','Medium','What is the name of the world\'s largest river by volume?','Which river flows through the heart of the Brazilian rainforest?','What is the longest river in South America?'],
+/* SPORT */
+['Brazil','Sport','Medium','Which country has won the most FIFA World Cups?','Which nation has won the football World Cup a record five times?','Which country won the football World Cup in 1958, 1962, 1970, 1994, and 2002?'],
+['1966','Sport','Easy','In which year did England win the FIFA World Cup?','England\'s only World Cup victory was in which year?','In what year did England beat West Germany 4-2 at Wembley?'],
+['Usain Bolt','Sport','Easy','Who holds the world record for the 100m sprint?','Which Jamaican athlete is the fastest man in recorded history?','Who set the 100m world record of 9.58 seconds in Berlin in 2009?'],
+['Muhammad Ali','Sport','Easy','Which boxer was known as The Greatest?','Which famous boxer\'s birth name was Cassius Clay?','Who beat George Foreman in the Rumble in the Jungle in 1974?'],
+['Michael Phelps','Sport','Easy','Which swimmer has won the most Olympic gold medals of all time?','Which American swimmer won 23 Olympic gold medals?','Who won 8 gold medals at the 2008 Beijing Olympics in swimming?'],
+['Serena Williams','Sport','Easy','Which female tennis player won 23 Grand Slam singles titles?','Which American tennis player dominated women\'s tennis for over two decades?','Who holds the Open Era record for most women\'s Grand Slam singles titles?'],
+['Tiger Woods','Sport','Easy','Which golfer has won the Masters Tournament five times?','Who won the Masters in 2019 after an 11-year major drought?','Which American golfer holds the record for most PGA Tour victories?'],
+['Michael Jordan','Sport','Easy','Which basketball player wore number 23 for the Chicago Bulls?','Which NBA legend won six championships with the Chicago Bulls?','Who is widely considered the greatest basketball player of all time?'],
+['Pelé','Sport','Easy','Which Brazilian footballer scored over 1000 career goals?','Which footballer won three FIFA World Cups?','Who was the first player to win the World Cup three times?'],
+['Wembley','Sport','Easy','What is England\'s national football stadium?','At which venue was the 1966 FIFA World Cup Final held?','Which London stadium seats 90,000 and is home to the England national team?'],
+['New Zealand','Sport','Medium','Which country\'s rugby team is known as the All Blacks?','Which nation performs the Haka before rugby matches?','Which country has won the Rugby World Cup the most times?'],
+['Jesse Owens','Sport','Medium','Which American athlete won four gold medals at the 1936 Berlin Olympics?','Who famously won four golds at Adolf Hitler\'s Olympics in 1936?','Which sprinter won the 100m, 200m, long jump, and 4x100m relay at the 1936 Olympics?'],
+['Adam Peaty','Sport','Medium','Which British swimmer broke the world record in the 100m breaststroke?','Which English swimmer became the first to swim 100m breaststroke in under 57 seconds?','Which British swimmer won gold at the 2016 Rio Olympics in the breaststroke?'],
+['Formula One','Sport','Easy','In which motorsport did Michael Schumacher win seven world championships?','What racing series features the Monaco Grand Prix?','Which sport features teams like Mercedes, Ferrari, and Red Bull Racing?'],
+['Super Bowl','Sport','Easy','What is the name of the annual American football championship game?','Which annual game is the most watched sporting event in the United States?','What is the biggest game in American football called?'],
+['Manchester United','Sport','Easy','Which English football club plays at Old Trafford?','Sir Alex Ferguson managed which football club for 27 years?','Which club has won the English top flight title more times than any other?'],
+['Roger Federer','Sport','Medium','Who won the most Wimbledon men\'s singles titles with eight?','Which Swiss tennis player retired with 20 Grand Slam titles?','Who won Wimbledon a record eight times in the men\'s singles?'],
+['Rebecca Adlington','Sport','Medium','Which British swimmer won two gold medals at the 2008 Beijing Olympics?','Which Mansfield-born swimmer set the 800m freestyle world record at Beijing?','Which British female swimmer won the 400m and 800m freestyle golds at Beijing 2008?'],
+/* HISTORY */
+['1914','History','Medium','In which year did World War One begin?','In which year was Archduke Franz Ferdinand assassinated, triggering a world war?','In which year did the Great War start?'],
+['1945','History','Easy','In which year did World War Two end?','In which year did Germany surrender to the Allied forces?','VE Day was celebrated in which year?'],
+['Winston Churchill','History','Easy','Who was the British Prime Minister during most of World War Two?','Which British leader gave the We shall fight on the beaches speech?','Who led Britain to victory in World War Two?'],
+['Titanic','History','Easy','Which famous ship sank on its maiden voyage in 1912?','Which ocean liner struck an iceberg and sank in April 1912?','What was the name of the ship that sank in the North Atlantic after hitting an iceberg?'],
+['Neil Armstrong','History','Easy','Who was the first person to walk on the Moon?','Which astronaut said that\'s one small step for man in 1969?','Who became the first human to set foot on the Moon?'],
+['Napoleon Bonaparte','History','Medium','Which French military leader was defeated at the Battle of Waterloo in 1815?','Which French emperor was exiled to the island of Elba?','Which emperor was born in Corsica in 1769 and conquered much of Europe?'],
+['1969','History','Easy','In which year did humans first land on the Moon?','The Apollo 11 Moon landing took place in which year?','Neil Armstrong walked on the Moon for the first time in which year?'],
+['Martin Luther King Jr','History','Easy','Who delivered the I Have a Dream speech in 1963?','Which American civil rights leader was assassinated in Memphis in 1968?','Who led the Montgomery Bus Boycott in 1955?'],
+['1989','History','Medium','In which year did the Berlin Wall fall?','The Berlin Wall came down in which year?','German reunification began following events in which year?'],
+['Cleopatra','History','Medium','Which ancient Egyptian queen is famous for her relationships with Julius Caesar and Mark Antony?','Who was the last active pharaoh of ancient Egypt?','Which historical figure is said to have died from an asp bite?'],
+['The Great Fire of London','History','Medium','What disaster destroyed much of London in 1666?','Which catastrophe started in a bakery on Pudding Lane?','What event destroyed over 13,000 homes in London in September 1666?'],
+['Rosa Parks','History','Medium','Which civil rights activist refused to give up her bus seat in Alabama in 1955?','Who became a symbol of the civil rights movement by refusing to move to the back of a bus?','Which woman was arrested for not giving her seat to a white passenger in Montgomery?'],
+['Nelson Mandela','History','Easy','Who was the first Black president of South Africa?','Which South African leader was imprisoned for 27 years before becoming president?','Who was released from Robben Island prison in 1990?'],
+['Hiroshima','History','Medium','Which Japanese city had the first atomic bomb dropped on it in 1945?','Where was the atomic bomb Little Boy dropped by the USA in August 1945?','Which city was the target of the world\'s first nuclear attack?'],
+['Charles Darwin','History','Medium','Who wrote On the Origin of Species in 1859?','Which naturalist developed the theory of evolution by natural selection?','Who famously sailed on HMS Beagle and proposed the theory of evolution?'],
+['Queen Victoria','History','Medium','Which British monarch reigned from 1837 to 1901?','Who was on the throne during the height of the Victorian era?','Which queen held the record for the longest British reign before Elizabeth II?'],
+['Julius Caesar','History','Medium','Which Roman leader was assassinated on the Ides of March?','Who crossed the Rubicon River with his army in 49 BC?','Which Roman dictator was stabbed 23 times in the Senate?'],
+['1776','History','Medium','In which year did America declare independence?','The United States Declaration of Independence was signed in which year?','In which year did the American colonies declare independence from Britain?'],
+/* FOOD & DRINK */
+['Italy','Food & Drink','Easy','Which country is pizza from?','Which country is famous for pasta, pizza, and gelato?','In which country did lasagne originate?'],
+['Japan','Food & Drink','Easy','Which country is sushi from?','Which country is famous for ramen, sushi, and tempura?','In which country did sashimi originate?'],
+['India','Food & Drink','Easy','Which country is famous for curry, naan bread, and samosas?','In which country did chicken tikka masala originate?','Which country is home to vindaloo and biryani?'],
+['Mexico','Food & Drink','Easy','Which country is famous for tacos, burritos, and guacamole?','In which country did nachos originate?','Which country is tequila traditionally made in?'],
+['France','Food & Drink','Easy','Which country is famous for croissants, baguettes, and escargot?','In which country did French onion soup originate?','Which country is famous for wine regions including Bordeaux and Burgundy?'],
+['Belgium','Food & Drink','Medium','Which country is famous for its waffles and fine chocolate?','In which country were French fries actually invented?','Which European country is known for its beer, waffles, and chocolates?'],
+['Scotland','Food & Drink','Easy','Which country is famous for producing Scotch whisky?','In which country is haggis the national dish?','Which British country is famous for single malt whiskies from Speyside and Islay?'],
+['Champagne','Food & Drink','Medium','Which sparkling wine must legally come from a specific region of France?','What is the name of the famous sparkling wine region north-east of Paris?','Which French region gives its name to the most famous sparkling wine in the world?'],
+['Greece','Food & Drink','Medium','Which country is famous for moussaka, tzatziki, and feta cheese?','In which country did souvlaki and spanakopita originate?','Which Mediterranean country is associated with olive oil, olives, and hummus?'],
+['Tea','Food & Drink','Easy','What is considered the national drink of Britain?','Assam, Darjeeling, and Earl Grey are all varieties of what?','Which hot drink is made by infusing dried leaves in boiling water?'],
+['Guinness','Food & Drink','Easy','Which famous dark Irish stout is associated with St Patrick\'s Day?','What is the name of the famous Irish dry stout brewed in Dublin?','Which beer brand publishes the famous book of world records?'],
+['Vodka','Food & Drink','Medium','Which spirit is the main ingredient in a Bloody Mary cocktail?','Which clear spirit is traditionally associated with Russia and Poland?','What alcoholic spirit is traditionally made from fermented grain or potatoes?'],
+['Yorkshire','Food & Drink','Medium','Yorkshire pudding originated in which English county?','Which English region gave its name to a savoury batter pudding served with roast beef?','Which county lends its name to the puffy batter dish served with Sunday lunch?'],
+['Spaghetti','Food & Drink','Easy','What is the name of the long thin pasta used in Bolognese?','Carbonara and Bolognese sauces are typically served with which type of pasta?','Which pasta gets its name from the Italian for little strings?'],
+['Chocolate','Food & Drink','Easy','What sweet treat is made from cacao beans?','Which food was originally consumed as a bitter drink by the ancient Aztecs?','Which ingredient is made from cocoa solids and cocoa butter?'],
+['Beer','Food & Drink','Easy','What is the world\'s most consumed alcoholic drink?','IPA, stout, and lager are all types of what?','Which alcoholic drink is made by fermenting barley and hops?'],
+['Wine','Food & Drink','Easy','What alcoholic drink is made from fermented grapes?','Pinot Noir, Chardonnay, and Merlot are all types of what?','Which drink comes in red, white, and rosé varieties?'],
+/* SCIENCE & NATURE */
+['Oxygen','Science & Nature','Easy','What gas do humans need to breathe to survive?','Which gas makes up approximately 21% of the Earth\'s atmosphere?','Which gas is produced by plants during photosynthesis?'],
+['Jupiter','Science & Nature','Easy','Which is the largest planet in our solar system?','Which planet has the Great Red Spot?','Which gas giant is the biggest planet orbiting the Sun?'],
+['Diamond','Science & Nature','Easy','What is the hardest natural substance on Earth?','Which precious stone is the hardest material found in nature?','What scores 10 on the Mohs hardness scale?'],
+['Light','Science & Nature','Easy','What travels at approximately 300,000 kilometres per second in a vacuum?','What is the fastest thing in the universe?','What form of energy travels at the universal speed limit?'],
+['Gold','Science & Nature','Easy','Which precious metal has the chemical symbol Au?','Which element has the atomic number 79 and is a yellow precious metal?','Which metal is most associated with first place Olympic medals?'],
+['The Sun','Science & Nature','Easy','What is the name of the star at the centre of our solar system?','Which star is closest to planet Earth?','What provides the energy that drives weather on Earth?'],
+['Gravity','Science & Nature','Easy','What force keeps the planets orbiting the Sun?','Which fundamental force was famously described by Newton after watching an apple fall?','What force causes objects to fall towards the Earth?'],
+['Hydrogen','Science & Nature','Medium','Which is the lightest and most abundant element in the universe?','What element makes up most of the Sun?','Which element has atomic number 1 on the periodic table?'],
+['DNA','Science & Nature','Medium','What is the name of the double-helix molecule that carries genetic information?','Which molecule was described as a double helix by Watson and Crick in 1953?','What molecule stores the genetic blueprint of all living organisms?'],
+['Carbon dioxide','Science & Nature','Medium','Which gas do humans exhale when they breathe out?','Which greenhouse gas is produced by burning fossil fuels?','What gas is produced when carbon burns in oxygen?'],
+['Einstein','Science & Nature','Easy','Which scientist developed the Theory of Relativity?','Who is famous for the equation E equals mc squared?','Which physicist won the Nobel Prize for Physics in 1921?'],
+['Dinosaurs','Science & Nature','Easy','Which prehistoric creatures went extinct approximately 66 million years ago?','What large reptiles dominated Earth in the Mesozoic Era?','Which creatures are depicted in the Jurassic Park films?'],
+['Shark','Science & Nature','Easy','Which fish is the apex predator of the world\'s oceans?','Which sea creature has multiple rows of teeth that regrow continuously?','Which large marine animal featured in the 1975 film Jaws?'],
+/* MUSIC */
+['Michael Jackson','Music','Easy','Who was known as the King of Pop?','Which singer released the best-selling album Thriller?','Which American singer is famous for inventing the Moonwalk dance move?'],
+['The Beatles','Music','Easy','Which band consisted of John Lennon, Paul McCartney, George Harrison and Ringo Starr?','Which Liverpool band released Sgt. Pepper\'s Lonely Hearts Club Band and Abbey Road?','Which group are known as The Fab Four?'],
+['Elvis Presley','Music','Easy','Who was known as the King of Rock and Roll?','Which singer is associated with Hound Dog and Jailhouse Rock?','Which singer lived at Graceland in Memphis, Tennessee?'],
+['Queen','Music','Easy','Which band released the song Bohemian Rhapsody?','Which band featured Freddie Mercury as lead singer?','Which rock band performed the legendary set at Live Aid in 1985?'],
+['Adele','Music','Easy','Which British singer released the albums 21, 25, and 30?','Which singer is known for the hit Rolling in the Deep?','Which London-born singer won multiple Grammys for her album 21?'],
+['ABBA','Music','Easy','Which Swedish pop group is famous for Dancing Queen and Waterloo?','Which band\'s music is celebrated in the Mamma Mia musical?','Which four-member pop group won Eurovision in 1974?'],
+['David Bowie','Music','Medium','Which British rock star had the alter ego Ziggy Stardust?','Which singer released the albums Let\'s Dance and Heroes?','Which musician was known for changing personas and was born David Jones?'],
+['Glastonbury','Music','Easy','What is the name of the famous music festival held in Somerset, England?','Which annual British music festival is held at Worthy Farm in Pilton?','Which famous UK festival was founded by Michael Eavis in 1970?'],
+['The Rolling Stones','Music','Easy','Which rock band features Mick Jagger and Keith Richards?','Which British band released Paint It Black and Gimme Shelter?','Which group is often described as the world\'s greatest rock and roll band?'],
+['Beyoncé','Music','Easy','Which singer was the lead of Destiny\'s Child before going solo?','Which artist released the albums Lemonade and Renaissance?','Which American singer is married to rapper Jay-Z?'],
+['Piano','Music','Easy','Which musical instrument has 88 keys?','Which keyboard instrument was invented in Italy around 1700?','Which instrument is used to play Beethoven\'s Moonlight Sonata?'],
+['Ed Sheeran','Music','Easy','Which singer-songwriter is known for Shape of You and Perfect?','Which English musician is known for his guitar-playing and ginger hair?','Which artist released the albums called plus, multiply, and divide?'],
+['Whitney Houston','Music','Easy','Which singer performed the famous version of I Will Always Love You?','Which American singer is known for Greatest Love of All?','Which female singer appeared in the 1992 film The Bodyguard?'],
+['Eminem','Music','Medium','Which rapper is known as Slim Shady and was born Marshall Mathers?','Which Detroit rapper starred in the film 8 Mile?','Which rapper has sold over 220 million records worldwide?'],
+/* FILM & TV */
+['Steven Spielberg','Film & TV','Easy','Who directed Jaws, ET, and Schindler\'s List?','Which Hollywood director made Jurassic Park and Saving Private Ryan?','Who directed Indiana Jones and the Raiders of the Lost Ark?'],
+['Star Wars','Film & TV','Easy','Which film franchise features Luke Skywalker, Darth Vader, and Han Solo?','In which film series is May the Force be with you a famous quote?','Which sci-fi saga created by George Lucas began in 1977?'],
+['The Simpsons','Film & TV','Easy','Which animated TV show features Homer, Marge, Bart, and Lisa?','Which long-running cartoon is set in the fictional town of Springfield?','Which American animated sitcom first aired in 1989?'],
+['James Bond','Film & TV','Easy','Which fictional British spy is known by the code number 007?','Which spy hero works for MI6 and drives an Aston Martin?','Which secret agent appeared in a series of films based on Ian Fleming novels?'],
+['Harry Potter','Film & TV','Easy','Which fictional wizard is the main character of J.K. Rowling\'s series?','Which character is famous for a lightning bolt scar on his forehead?','Which student attended Hogwarts School of Witchcraft and Wizardry?'],
+['Friends','Film & TV','Easy','Which sitcom featured characters called Ross, Rachel, Monica, Chandler, Joey, and Phoebe?','Which TV show was set in the coffee shop Central Perk?','Which popular 1990s sitcom had the theme song I\'ll Be There for You?'],
+['Leonardo DiCaprio','Film & TV','Easy','Which actor starred in Titanic, The Revenant, and Inception?','Which Hollywood actor won his first Oscar for The Revenant in 2016?','Who played Jack in the 1997 film Titanic?'],
+['Netflix','Film & TV','Easy','Which streaming service created Stranger Things and The Crown?','Which subscription streaming service dominates global viewing?','Which platform launched in 1997 as a DVD postal rental service?'],
+['Walt Disney','Film & TV','Easy','Who created Mickey Mouse and founded an entertainment company in his name?','Which animator and businessman created Disneyland?','Who co-founded The Walt Disney Company in 1923?'],
+['Alfred Hitchcock','Film & TV','Medium','Which director made the film Psycho and is known as the Master of Suspense?','Who directed the thriller films Rear Window and The Birds?','Which British filmmaker made Vertigo, Psycho, and North by Northwest?'],
+['Shrek','Film & TV','Easy','Which animated film features a green ogre who lives in a swamp?','Which DreamWorks film features Far Far Away as its setting?','In which animated film does Donkey become best friends with an ogre?'],
+['Doctor Who','Film & TV','Easy','Which long-running BBC sci-fi show features a time-travelling alien called The Doctor?','Which British TV show features a blue police box called the TARDIS?','Which BBC show features alien villains called the Daleks?'],
+['James Cameron','Film & TV','Medium','Who directed the films Titanic and Avatar?','Which director created the two highest-grossing films of all time at the time of their release?','Who directed the 1997 film Titanic starring Leonardo DiCaprio?'],
+['Jurassic Park','Film & TV','Easy','Which 1993 Spielberg film featured genetically recreated dinosaurs?','Which blockbuster film was based on a Michael Crichton novel about a dinosaur theme park?','Which film franchise features the quote life uh finds a way?'],
+/* KIDS EASY */
+['Seven','Kids (Easy)','Easy','How many days are there in a week?','How many colours are there in a rainbow?','If you count Monday to Sunday, how many days do you count?'],
+['Blue','Kids (Easy)','Easy','What colour is the sky on a sunny day?','What colour are bluebells?','What colour is the sea?'],
+['Three','Kids (Easy)','Easy','How many blind mice are in the nursery rhyme Three Blind Mice?','The Three Little Pigs — how many pigs are there?','How many sides does a triangle have?'],
+['Elephant','Kids (Easy)','Easy','Which is the largest land animal on Earth?','Which animal has a trunk and large ears?','Which animal is famous for its incredible memory?'],
+['Lion','Kids (Easy)','Easy','Which animal is known as the King of the Jungle?','Which big cat lives in Africa and has a mane?','What is the male of the species whose female is called a lioness?'],
+['Red','Kids (Easy)','Easy','What colour is a London bus?','What colour are strawberries?','What colour is associated with stop signs?'],
+['Four','Kids (Easy)','Easy','How many legs does a dog have?','How many seasons are there in a year?','How many sides does a square have?'],
+['Shark','Kids (Easy)','Easy','Which fierce fish lives in the sea and has razor-sharp teeth?','Which large sea creature featured in the film Jaws?','Which animal is known as the most dangerous fish in the ocean?'],
+['Snow','Kids (Easy)','Easy','What falls from the sky in winter and is white and cold?','What do children use to build a snowman?','What is frozen water called when it falls as white flakes?'],
+['Yellow','Kids (Easy)','Easy','What colour is a banana?','What colour is the sun in a child\'s drawing?','What colour are daffodils?'],
+/* SWIMMING & SPORT */
+['Freestyle','Swimming & Sport','Easy','Which swimming stroke is the fastest?','Which swimming technique involves alternating arm over arm?','In which stroke are swimmers allowed to swim in any style they choose?'],
+['Backstroke','Swimming & Sport','Easy','Which swimming stroke has swimmers lying on their back?','Which is the only stroke swum on your back?','In which swimming stroke do you look up at the ceiling?'],
+['Butterfly','Swimming & Sport','Easy','Which is considered the most difficult swimming stroke?','Which swimming stroke involves both arms moving forward over the water simultaneously?','Which stroke requires a dolphin kick and simultaneous arm pull?'],
+['Breaststroke','Swimming & Sport','Easy','Which swimming stroke involves a frog kick?','Which stroke has swimmers facing down with arms moving in a semicircle?','Which swimming stroke is generally the slowest of the four?'],
+['50 metres','Swimming & Sport','Medium','What length is a standard Olympic swimming pool?','An Olympic swimming pool measures how many metres long?','Olympic swimmers race in pools of what length?'],
+['Adam Peaty','Swimming & Sport','Medium','Which British swimmer has broken the world record in the 100m breaststroke multiple times?','Which English swimmer became the first person to swim 100m breaststroke in under 57 seconds?','Which British swimmer won breaststroke gold at the 2016 Rio Olympics?'],
+['Eight','Swimming & Sport','Medium','How many lanes are in a standard Olympic swimming pool?','An Olympic swimming pool has how many competition lanes?','In a standard competition pool, how many swimmers race at the same time?'],
+['Four','Swimming & Sport','Easy','How many strokes make up an individual medley?','Butterfly, backstroke, breaststroke, and freestyle equals how many strokes?','An individual medley in swimming features how many different strokes?'],
+['Rebecca Adlington','Swimming & Sport','Medium','Which British swimmer won two gold medals at the 2008 Beijing Olympics?','Which Mansfield-born swimmer set the 800m freestyle world record at the Beijing Olympics?','Which British female swimmer won gold in the 400m and 800m freestyle at Beijing 2008?'],
+['Michael Phelps','Swimming & Sport','Easy','Who is the most decorated Olympian of all time?','Which swimmer won 23 Olympic gold medals in total?','Who won 8 swimming gold medals at a single Olympic Games in 2008?']
+];
+
+var offlineUsed=[];
+
+function shuffleArr(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+
+function generateOfflineQuiz(cat,count){
+  var catMap={'General Knowledge':null,'Mixed — all topics':null};
+  var pool=ODB.filter(function(f){
+    if(cat==='Mixed — all topics'||cat==='General Knowledge')return true;
+    return f[1]===cat;
+  });
+  pool=shuffleArr(pool).filter(function(f){return offlineUsed.indexOf(f[0])===-1;});
+  /* if we've exhausted this category, reset used for that category */
+  if(pool.length<count){
+    var freshPool=ODB.filter(function(f){
+      if(cat==='Mixed — all topics'||cat==='General Knowledge')return true;
+      return f[1]===cat;
+    });
+    pool=shuffleArr(freshPool);
+    offlineUsed=[];
+  }
+  var qs=[];
+  for(var i=0;i<pool.length&&qs.length<count;i++){
+    var fact=pool[i];
+    var answer=fact[0];
+    var variants=fact.slice(3);
+    var qText=variants[Math.floor(Math.random()*variants.length)];
+    /* build wrong answers from same category */
+    var wrongPool=ODB.filter(function(f){return f[0]!==answer&&f[1]===fact[1];});
+    if(wrongPool.length<2)wrongPool=ODB.filter(function(f){return f[0]!==answer;});
+    var wrongs=shuffleArr(wrongPool).slice(0,2).map(function(f){return f[0];});
+    var opts=shuffleArr([answer,wrongs[0]||'None of the above',wrongs[1]||'Unknown']);
+    var correctLetter=['A','B','C'][opts.indexOf(answer)];
+    qs.push({number:qs.length+1,question:qText,options:{A:opts[0],B:opts[1],C:opts[2]},answer:correctLetter,answer_text:answer,qm_note:''});
+    offlineUsed.push(answer);
+  }
+  return qs;
+}
+</script>
+</body>
+</html>
